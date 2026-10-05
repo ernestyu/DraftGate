@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 WORKFLOW_DIR = PurePosixPath("docs/writing/commentary")
 REGISTRY_REL = WORKFLOW_DIR / "gate-registry.json"
 CUSTOM_RULES_DIR = PurePosixPath(".writing-rules")
+ARCHIVE_DIR = PurePosixPath(".writing-state/archive/write-commentary")
 ARTICLE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 BLOB_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -61,6 +62,53 @@ def validate_custom_rules(root: Path, registry: dict) -> list[str]:
     return failures
 
 
+def git(root: Path, *args: str) -> str:
+    return subprocess.check_output(["git", *args], cwd=root, text=True, stderr=subprocess.STDOUT).strip()
+
+
+def validate_archives(root: Path, registry: dict) -> list[str]:
+    failures: list[str] = []
+    archive_root = root / ARCHIVE_DIR
+    if not archive_root.exists():
+        return failures
+    for path in sorted(archive_root.glob("*/c*.json")):
+        article_id = path.parent.name
+        try:
+            cycle = int(path.stem[1:])
+            state = json.loads(path.read_text(encoding="utf-8"))
+        except (ValueError, json.JSONDecodeError) as exc:
+            failures.append(f"invalid archive {path.relative_to(root)}: {exc}")
+            continue
+        failures += [f"{path.relative_to(root)}: {x}" for x in validate_state(registry, state)]
+        if state.get("article_id") != article_id or state.get("cycle") != cycle:
+            failures.append(f"{path.relative_to(root)}: archive path identity mismatch")
+            continue
+        if state.get("status") != "complete" or state.get("current_gate") is not None:
+            failures.append(f"{path.relative_to(root)}: archived state must be complete")
+            continue
+        tag = f"writing-evidence/{article_id}/c{cycle}"
+        try:
+            target = git(root, "rev-parse", f"refs/tags/{tag}^{{}}")
+            historical_text = git(root, "show", f"{target}:.writing-state/write-commentary/{article_id}.json")
+            historical = json.loads(historical_text)
+        except (subprocess.CalledProcessError, json.JSONDecodeError):
+            failures.append(f"{path.relative_to(root)}: missing or invalid evidence ref {tag}")
+            continue
+        if historical != state:
+            failures.append(f"{path.relative_to(root)}: archive/evidence state mismatch")
+        message = git(root, "show", "-s", "--format=%B", target)
+        if "Writing-Workflow: gate" not in message or f"Writing-Article: {article_id}" not in message or "Writing-Gate: G7" not in message:
+            failures.append(f"{path.relative_to(root)}: evidence target is not G7 completion")
+        try:
+            article_blob = git(root, "rev-parse", f"{target}:{state['article_path']}")
+        except subprocess.CalledProcessError:
+            failures.append(f"{path.relative_to(root)}: evidence target missing article")
+            continue
+        if state.get("article_revision") != article_blob:
+            failures.append(f"{path.relative_to(root)}: archived article_revision mismatch")
+    return failures
+
+
 def validate_registry(root: Path) -> list[str]:
     failures: list[str] = []
     try:
@@ -99,6 +147,7 @@ def validate_registry(root: Path) -> list[str]:
             if not isinstance(rel, str) or not (root / normalize(WORKFLOW_DIR, rel)).is_file():
                 failures.append(f"{gate.get('id')} resource missing: {rel}")
     failures += validate_custom_rules(root, registry)
+    failures += validate_archives(root, registry)
     return failures
 
 

@@ -15,3 +15,18 @@ When working on an article:
 9. Stop after the gate transition.
 
 Do not introduce Hugo, CMS, site-generation, cover-image, or publishing behavior into the core workflow.
+
+
+## Lifecycle authority
+
+Normal article work should run on `writing/<article-id>/c<cycle>`, not directly on `main`.
+
+For a new or archived article cycle, prefer `./writing begin ...`. After G7, verify CI PASS for the exact terminal G7 commit before running `./writing closeout --article-id <id> --ci-passed-for <G7_SHA>`.
+
+Closeout is fail-closed. Do not delete a writing branch before evidence ref, main durable result, and cycle-aware archive are verified.
+
+Evidence refs are write-once by policy: an existing same-target ref is accepted; a different-target ref must stop the operation.
+
+Do not auto-run `reconcile`. Report STATE STALE, explain that reconcile accepts external edits without validating Gate authority, and require explicit user confirmation.
+
+Repository maintenance must not modify an in-progress bound article or active state except through a lifecycle operation explicitly authorized by the workflow.

@@ -18,8 +18,8 @@ VW = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = VW
 SPEC.loader.exec_module(VW)
 
-TRAILER_KEYS = {"Writing-Workflow", "Writing-Article", "Writing-Gate"}
-WORKFLOW_OPS = {"init", "gate", "reconcile", "start-cycle", "reopen"}
+TRAILER_KEYS = {"Writing-Workflow", "Writing-Article", "Writing-Gate", "Writing-Cycle", "Writing-Recovery", "Writing-Maintenance"}
+WORKFLOW_OPS = {"init", "gate", "reconcile", "start-cycle", "reopen", "closeout", "maintenance"}
 TRAILER_RE = re.compile(r"^(Writing-[A-Za-z-]+):\s*(.*?)\s*$")
 
 
@@ -53,6 +53,9 @@ def parse_writing_trailers(message: str) -> tuple[dict[str, str], list[str]]:
     operation = trailers.get("Writing-Workflow")
     article = trailers.get("Writing-Article")
     gate = trailers.get("Writing-Gate")
+    cycle = trailers.get("Writing-Cycle")
+    recovery = trailers.get("Writing-Recovery")
+    maintenance = trailers.get("Writing-Maintenance")
 
     if operation is None:
         if article is not None or gate is not None:
@@ -73,6 +76,27 @@ def parse_writing_trailers(message: str) -> tuple[dict[str, str], list[str]]:
             failures.append("gate operation requires valid Writing-Gate")
     elif gate is not None:
         failures.append("Writing-Gate is allowed only for gate operation")
+
+    if operation == "closeout":
+        try:
+            if int(cycle or "0") < 1:
+                raise ValueError
+        except ValueError:
+            failures.append("closeout requires positive Writing-Cycle")
+    elif cycle is not None:
+        failures.append("Writing-Cycle is allowed only for closeout")
+
+    if operation == "reconcile":
+        if recovery != "confirmed":
+            failures.append("reconcile requires Writing-Recovery: confirmed")
+    elif recovery is not None:
+        failures.append("Writing-Recovery is allowed only for reconcile")
+
+    if operation == "maintenance":
+        if maintenance not in {"temporary-artifact"}:
+            failures.append("maintenance requires supported Writing-Maintenance category")
+    elif maintenance is not None:
+        failures.append("Writing-Maintenance is allowed only for maintenance")
 
     return trailers, failures
 
@@ -302,6 +326,44 @@ def validate_reopen_commit(root: Path, commit: str, article_id: str) -> list[str
     return failures
 
 
+def archive_rel(article_id: str, cycle: int) -> str:
+    return f".writing-state/archive/write-commentary/{article_id}/c{cycle}.json"
+
+
+def validate_closeout_commit(root: Path, commit: str, article_id: str, cycle: int) -> list[str]:
+    failures: list[str] = []
+    parent = parent_of(root, commit)
+    if parent is None:
+        return ["closeout commit requires parent"]
+    arel = article_rel(article_id)
+    srel = state_rel(article_id)
+    ar = archive_rel(article_id, cycle)
+    changed = changed_paths(root, commit)
+    if ar not in changed:
+        failures.append("closeout must create archived state")
+    if file_exists_at(root, commit, srel):
+        failures.append("closeout must not retain active state")
+    if not file_exists_at(root, commit, arel):
+        failures.append("closeout must retain final article")
+    if not file_exists_at(root, commit, ar):
+        return failures
+    archived = read_json_at(root, commit, ar)
+    failures += VW.validate_state(VW.load_registry(root), archived)
+    if archived.get("article_id") != article_id or archived.get("cycle") != cycle:
+        failures.append("closeout archive identity mismatch")
+    if archived.get("status") != "complete" or archived.get("current_gate") is not None:
+        failures.append("closeout archive must be complete")
+    return failures
+
+
+def validate_maintenance_commit(root: Path, commit: str, article_id: str) -> list[str]:
+    changed = changed_paths(root, commit)
+    protected = {article_rel(article_id), state_rel(article_id)}
+    if changed & protected:
+        return ["maintenance must not modify bound article or active state"]
+    return []
+
+
 def validate_start_cycle_commit(root: Path, commit: str, article_id: str) -> list[str]:
     failures: list[str] = []
     parent = parent_of(root, commit)
@@ -361,6 +423,10 @@ def validate_commit(root: Path, commit: str) -> list[str]:
         return validate_reopen_commit(root, commit, article_id)
     if operation == "start-cycle":
         return validate_start_cycle_commit(root, commit, article_id)
+    if operation == "closeout":
+        return validate_closeout_commit(root, commit, article_id, int(trailers["Writing-Cycle"]))
+    if operation == "maintenance":
+        return validate_maintenance_commit(root, commit, article_id)
     return [f"unsupported workflow operation: {operation}"]
 
 

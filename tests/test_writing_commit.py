@@ -327,6 +327,14 @@ class WritingCommitTests(unittest.TestCase):
         self.assertEqual(VC.validate_commit(self.root, start_commit), [])
         self.assertEqual(self.blob(human_commit, self.article_path), self.blob(start_commit, self.article_path))
 
+    def test_reconcile_commit_requires_confirmation_trailer(self):
+        state = self.read_state()
+        state["article_revision"] = self.blob("HEAD", self.article_path)
+        self.write_state(state)
+        commit = self.commit(self.msg("reconcile", article=self.article_id))
+        failures = VC.validate_commit(self.root, commit)
+        self.assertTrue(any("Writing-Recovery: confirmed" in x for x in failures))
+
     def test_complete_reconcile_commit_fails(self):
         state = self.read_state()
         state["entry_gate"] = "G7"
@@ -345,7 +353,7 @@ class WritingCommitTests(unittest.TestCase):
         self.assertNotEqual(state["article_revision"], current_blob)
         state["article_revision"] = current_blob
         self.write_state(state)
-        commit = self.commit(self.msg("reconcile", article=self.article_id))
+        commit = self.commit(self.msg("reconcile", article=self.article_id) + "\nWriting-Recovery: confirmed")
         failures = VC.validate_commit(self.root, commit)
         self.assertTrue(any("reconcile requires in_progress state" in x for x in failures))
 

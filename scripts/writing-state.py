@@ -26,6 +26,38 @@ def state_path(article_id: str, root: Path = ROOT) -> Path:
     return root / ".writing-state" / "write-commentary" / f"{article_id}.json"
 
 
+def archive_dir(article_id: str, root: Path = ROOT) -> Path:
+    if not VW.valid_article_id(article_id):
+        raise StateError("invalid article_id")
+    return root / ".writing-state" / "archive" / "write-commentary" / article_id
+
+
+def archive_path(article_id: str, cycle: int, root: Path = ROOT) -> Path:
+    if cycle < 1:
+        raise StateError("invalid cycle")
+    return archive_dir(article_id, root) / f"c{cycle}.json"
+
+
+def latest_archived_state(article_id: str, root: Path = ROOT) -> dict:
+    directory = archive_dir(article_id, root)
+    candidates: list[tuple[int, Path]] = []
+    if directory.is_dir():
+        for path in directory.glob("c*.json"):
+            try:
+                cycle = int(path.stem[1:])
+            except ValueError:
+                continue
+            candidates.append((cycle, path))
+    if not candidates:
+        raise StateError(f"no archived state found: {article_id}")
+    _, path = max(candidates, key=lambda item: item[0])
+    state = json.loads(path.read_text(encoding="utf-8"))
+    validate_or_raise(state, root)
+    if state.get("status") != "complete" or state.get("current_gate") is not None:
+        raise StateError("latest archived state is not complete")
+    return state
+
+
 def read_state(article_id: str, root: Path = ROOT) -> dict:
     path = state_path(article_id, root)
     if not path.is_file():
@@ -148,7 +180,9 @@ def advance_state(article_id: str, root: Path = ROOT) -> dict:
     return after
 
 
-def reconcile_state(article_id: str, root: Path = ROOT) -> dict:
+def reconcile_state(article_id: str, root: Path = ROOT, confirmed: bool = False) -> dict:
+    if not confirmed:
+        raise StateError("reconcile is recovery-only and requires explicit confirmation")
     before = read_state(article_id, root)
     validate_or_raise(before, root)
     if before.get("status") != "in_progress":
@@ -182,10 +216,14 @@ def reopen_state(article_id: str, root: Path = ROOT) -> dict:
 
 
 def start_cycle(article_id: str, root: Path = ROOT, entry_gate: str = "G1") -> dict:
-    before = read_state(article_id, root)
-    validate_or_raise(before, root)
-    if before.get("status") != "complete":
-        raise StateError("new cycle requires complete state and explicit start-cycle")
+    active = state_path(article_id, root)
+    if active.is_file():
+        before = read_state(article_id, root)
+        validate_or_raise(before, root)
+        if before.get("status") != "complete":
+            raise StateError("new cycle requires complete state and explicit start-cycle")
+    else:
+        before = latest_archived_state(article_id, root)
     current_revision = committed_article_blob(root, before["article_path"])
     after = json.loads(json.dumps(before))
     after["cycle"] = before["cycle"] + 1
@@ -225,6 +263,7 @@ def main() -> int:
 
     p = sub.add_parser("reconcile")
     p.add_argument("--article-id", required=True)
+    p.add_argument("--confirm-recovery", action="store_true")
 
     p = sub.add_parser("reopen")
     p.add_argument("--article-id", required=True)
@@ -246,7 +285,7 @@ def main() -> int:
         elif args.command == "advance":
             state = advance_state(args.article_id, root)
         elif args.command == "reconcile":
-            state = reconcile_state(args.article_id, root)
+            state = reconcile_state(args.article_id, root, args.confirm_recovery)
         elif args.command == "reopen":
             state = reopen_state(args.article_id, root)
         elif args.command == "start-cycle":

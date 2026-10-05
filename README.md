@@ -54,27 +54,16 @@ No Docker, database, model server, or self-hosted runner is required.
 
 ## Quick start
 
-For normal use, fork this repository on GitHub first, then give the URL of your fork to a GitHub-capable ChatGPT or other Agent. Work in your fork so article commits, state files, Custom Rules, and CI runs belong to your own repository.
+Normal use is Agent-first:
 
-Before initializing state, use **Pre-G1** as an open brainstorm with the Agent. Discuss the topic, motivation, possible question, and rough direction freely. Pre-G1 has no state and no PASS / FAIL. Initialize DraftGate only after the idea is clear enough for G1 to make a real commitment.
+1. Fork DraftGate on GitHub.
+2. Give your fork URL to a GitHub-capable Agent.
+3. Brainstorm freely in Pre-G1.
+4. Tell the Agent to begin DraftGate for the article.
+5. Execute one Gate at a time through conversation.
+6. After G7 and CI PASS, the Agent closes the cycle: it preserves Gate evidence, writes one high-level result to `main`, archives the completed state, and removes the temporary writing branch.
 
-Clone your fork, then create an article:
-
-```bash
-./writing bootstrap --article-id 20261005-example-topic --title "Provisional Title"
-git add articles/20261005-example-topic/index.md
-git commit -m "Bootstrap article"
-```
-
-Initialize the workflow:
-
-```bash
-./writing init --article-id 20261005-example-topic
-git add .writing-state/write-commentary/20261005-example-topic.json
-git commit -m $'Initialize writing workflow\n\nWriting-Workflow: init\nWriting-Article: 20261005-example-topic'
-```
-
-Then work with an AI agent one gate at a time.
+A normal user does not need to manage Git branches, trailers, evidence tags, archive paths, or squash mechanics.
 
 ## Using with an AI agent
 
@@ -112,9 +101,10 @@ DraftGate Core remains author-neutral. Long-term personal preferences live in an
 
 Users do not need to edit these files manually. Tell the Agent conversationally that a preference should be kept, changed, or removed as a long-term rule. Only the current Gate's Custom Rules may participate in that Gate. Core always wins on conflict.
 
-## Local commands
+## Advanced / local usage
 
 ```bash
+./writing begin --article-id <id> [--from Gx] [--title "..."]
 ./writing bootstrap --article-id <id> [--title "..."]
 ./writing init --article-id <id> [--from Gx]
 ./writing show --article-id <id>
@@ -122,9 +112,14 @@ Users do not need to edit these files manually. Tell the Agent conversationally 
 ./writing advance --article-id <id>
 ./writing reopen --article-id <id>
 ./writing start-cycle --article-id <id> [--from Gx]
-./writing reconcile --article-id <id>
+./writing reconcile --article-id <id> --confirm-recovery
+./writing closeout --article-id <id> --ci-passed-for <G7_SHA>
 ./writing test
 ```
+
+`begin` creates the temporary `writing/<article-id>/c<cycle>` branch and initializes the active cycle. `closeout` requires the exact G7 commit already verified by CI, preserves the full Gate chain under `writing-evidence/<article-id>/c<cycle>`, writes a cycle-aware archive, produces one high-level `main` commit, and deletes the temporary branch only after verification.
+
+`reconcile` is recovery-only. It accepts the current committed article as a new baseline but does not prove that external edits complied with the current Gate. Agents must never run it automatically and must obtain explicit user confirmation.
 
 `advance` updates the state file from the current working-tree article. A valid CHANGED gate commit must contain both the article change and the matching state transition.
 
@@ -149,7 +144,7 @@ The included workflow runs on `ubuntu-latest` and validates:
 - tracked state freshness;
 - workflow-controlled commits and trailers.
 
-GitHub Actions is optional. The same validators run locally with:
+GitHub Actions is optional for local-only use, but closeout requires the Agent to verify CI PASS for the terminal G7 commit before supplying that exact SHA. The same validators run locally with:
 
 ```bash
 ./writing test
@@ -173,3 +168,12 @@ The public rules deliberately avoid language-specific phrase bans, fixed paragra
 ## License
 
 MIT.
+
+
+## Lifecycle and history
+
+Each article cycle uses one temporary branch, `writing/<article-id>/c<cycle>`. Gate commits remain intact there. At successful closeout, DraftGate creates the policy-level write-once evidence ref `writing-evidence/<article-id>/c<cycle>`, archives the exact completed state at `.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`, applies the final article and durable Custom Rules to current `main` in one high-level commit, removes the active state from `main`, then deletes the temporary branch.
+
+Archived states are historical and are never freshness-checked against later article versions. A later cycle reads the latest archive without modifying it and creates a new active state from the current `main` article.
+
+Persistent Custom Rules are repository-wide within a fork. A fork is therefore best treated as one author's or one writing profile's long-term rule space.

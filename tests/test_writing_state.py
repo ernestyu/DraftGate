@@ -139,13 +139,21 @@ class WritingStateTests(unittest.TestCase):
         self.assertTrue(failures)
         self.assertIn("no-op transition is invalid", failures[0])
 
+    def test_reconcile_requires_explicit_confirmation(self):
+        self.init_state("G6")
+        self.commit_all("init writing state")
+        self.modify_article("---\ntitle: test\n---\n\nExternal edit.\n")
+        self.commit_all("external article edit")
+        with self.assertRaisesRegex(WS.StateError, "recovery-only"):
+            WS.reconcile_state(self.article_id, self.root)
+
     def test_reconcile_changes_only_revision_and_preserves_entry_metadata(self):
         before = self.init_state("G6")
         self.commit_all("init writing state")
         self.modify_article("---\ntitle: test\n---\n\nExternal accepted edit.\n")
         self.commit_all("external article edit")
         old_revision = self.read_state()["article_revision"]
-        after = WS.reconcile_state(self.article_id, self.root)
+        after = WS.reconcile_state(self.article_id, self.root, confirmed=True)
         self.assertNotEqual(after["article_revision"], old_revision)
         for field in (
             "workflow", "article_id", "article_path", "cycle",
@@ -192,7 +200,7 @@ class WritingStateTests(unittest.TestCase):
         self.write_state(state)
         self.commit_all("complete cycle")
         with self.assertRaisesRegex(WS.StateError, "reconcile requires in_progress"):
-            WS.reconcile_state(self.article_id, self.root)
+            WS.reconcile_state(self.article_id, self.root, confirmed=True)
 
     # Selectable-entry coverage
 

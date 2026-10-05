@@ -6,12 +6,15 @@ cd "$repo_root"
 
 cmd="${1:-}"
 if [[ -z "$cmd" ]]; then
-  echo "usage: ./writing <bootstrap|init|show|validate|advance|reconcile|reopen|start-cycle|test> ..."
+  echo "usage: ./writing <begin|closeout|bootstrap|init|show|validate|advance|reconcile|reopen|start-cycle|test> ..."
   exit 2
 fi
 shift
 
 case "$cmd" in
+  begin|closeout)
+    exec python3 scripts/writing-lifecycle.py "$cmd" "$@"
+    ;;
   bootstrap)
     exec python3 scripts/bootstrap-writing-article.py "$@"
     ;;

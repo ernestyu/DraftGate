@@ -56,28 +56,16 @@ DraftGate 不依赖 Hugo、CMS、front matter、封面图或任何发布系统�
 
 ## 快速开始
 
-正常使用时，先在 GitHub 上 Fork 本仓库，把 Fork 后属于你自己的仓库链接交给能够读写 GitHub 的 ChatGPT 或其他 Agent。之后的文章、state、Custom Rules 和 CI 都发生在你的 Fork 中。
+默认使用方式是 Agent-first：
 
-正式初始化 state 前，先做 **Pre-G1 brainstorm**。这一阶段只和 AI 发散讨论主题、动机、可能的问题和大致方向，没有 state，也没有 PASS / FAIL。等你已经大致知道为什么要写、想讨论什么，再进入 G1。
+1. 在 GitHub 上 Fork DraftGate；
+2. 把自己的 Fork URL 交给能够操作 GitHub 的 Agent；
+3. 先在 Pre-G1 和 Agent 自由讨论主题；
+4. 告诉 Agent 开始这篇文章的 DraftGate 流程；
+5. 每次通过对话只执行一个 Gate；
+6. G7 完成且 CI PASS 后，由 Agent 完成 closeout：保存完整 Gate 证据、把最终结果以一个高层 commit 写入 `main`、归档 state，并删除临时 writing branch。
 
-
-Clone 仓库后，先创建一篇文章：
-
-```bash
-./writing bootstrap --article-id 20261005-example-topic --title "暂定标题"
-git add articles/20261005-example-topic/index.md
-git commit -m "Bootstrap article"
-```
-
-初始化写作流程：
-
-```bash
-./writing init --article-id 20261005-example-topic
-git add .writing-state/write-commentary/20261005-example-topic.json
-git commit -m $'Initialize writing workflow\n\nWriting-Workflow: init\nWriting-Article: 20261005-example-topic'
-```
-
-之后让 AI Agent 每次只执行一个 Gate。
+普通用户不需要理解 branch、commit trailer、evidence tag、archive path 或 squash 的具体 Git 操作。
 
 ## 与 AI Agent 配合
 
@@ -115,9 +103,10 @@ DraftGate Core 保持语言和作者中立。用户长期形成的个人偏好�
 
 普通用户不需要手工编辑这些文件。只需要在和 Agent 的对话中明确说某条偏好要长期保留、修改或删除，Agent 负责维护对应 Gate 的规则。执行某个 Gate 时，只允许该 Gate 的 Custom Rules 参与；如果 Custom Rule 与 Core 冲突，以 Core 为准。
 
-## 本地命令
+## 高级 / 本地使用
 
 ```bash
+./writing begin --article-id <id> [--from Gx] [--title "..."]
 ./writing bootstrap --article-id <id> [--title "..."]
 ./writing init --article-id <id> [--from Gx]
 ./writing show --article-id <id>
@@ -125,9 +114,14 @@ DraftGate Core 保持语言和作者中立。用户长期形成的个人偏好�
 ./writing advance --article-id <id>
 ./writing reopen --article-id <id>
 ./writing start-cycle --article-id <id> [--from Gx]
-./writing reconcile --article-id <id>
+./writing reconcile --article-id <id> --confirm-recovery
+./writing closeout --article-id <id> --ci-passed-for <G7_SHA>
 ./writing test
 ```
+
+`begin` 会创建 `writing/<article-id>/c<cycle>` 临时分支并初始化 active cycle。`closeout` 要求传入已经由 CI 验证通过的准确 G7 commit SHA；它会用 `writing-evidence/<article-id>/c<cycle>` 保留完整 Gate 历史，把 completed state 按 cycle 归档，以一个高层 commit 写入当前 `main`，并且只在验证全部通过后删除临时分支。
+
+`reconcile` 只用于异常恢复。它只是接受当前 committed article 作为新的 baseline，并不证明这些外部修改符合当前 Gate。Agent 不得自动执行，必须先获得用户明确确认。
 
 `advance` 会根据当前 working tree 中的文章更新 state。一个合法的 CHANGED Gate commit 必须同时包含文章修改和对应的 state transition。
 
@@ -178,3 +172,12 @@ GitHub Actions 不是运行 DraftGate 的必要条件。本地也可以执行同
 ## License
 
 MIT.
+
+
+## Lifecycle 与历史证据
+
+每个 article cycle 使用一个临时分支 `writing/<article-id>/c<cycle>`，G1–G7 的 Gate commits 在该分支中保持完整。成功 closeout 后，DraftGate 创建 policy-level write-once evidence ref `writing-evidence/<article-id>/c<cycle>`，把完整 state 归档到 `.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`，把最终文章和本轮产生的持久 Custom Rules 以一个高层 commit 写入当前 `main`，从 `main` 移除该 cycle 的 active state，最后删除临时 writing branch。
+
+Archive 是历史证据，不会因为后续文章变化而执行 freshness 检查。后续新 cycle 只读取最新 archive 作为历史来源，不修改旧 archive，并以当前 `main` 的文章 blob 建立新的 active state。
+
+Persistent Custom Rules 的作用域是整个 Fork。最简单的使用模型是：一个 Fork 对应一个作者或一套长期写作偏好。

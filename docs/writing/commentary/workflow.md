@@ -226,3 +226,26 @@ Repeated cycles are normal. DraftGate does not assume one G1→G7 pass creates a
 ## Boundary
 
 This project edits Markdown only. It does not publish, build a website, generate covers, manage CMS metadata, or deploy content.
+
+
+## Repository lifecycle
+
+Normal cycles run on `writing/<article-id>/c<cycle>`. Gate commits remain intact on that branch.
+
+After G7 and CI PASS, closeout:
+
+1. verifies the terminal G7 commit;
+2. creates or idempotently verifies `writing-evidence/<article-id>/c<cycle>`;
+3. applies only authorized durable cycle changes onto current `main`;
+4. stores the exact completed state at `.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`;
+5. removes the completed active-state representation from the main closeout tree;
+6. preserves durable Persistent Custom Rules changes;
+7. deletes the writing branch only after all verification passes.
+
+If current `main` changed since the writing branch base, non-conflicting changes are preserved. A conflict on the article, Custom Rules, or another authorized durable path stops closeout without deleting the writing branch.
+
+Evidence refs are policy-level write-once. They may not be moved or reused for a different target.
+
+Archived state is historical. It remains schema v4 but is not resumable and is not freshness-checked against later article versions. A later cycle reads the latest archive without modifying it, creates a new active state with cycle + 1, and uses the current main article blob as `article_revision`.
+
+`reconcile` is exceptional recovery only and requires explicit confirmation. It rebinds revision identity; it does not validate whether external edits complied with Gate authority.
