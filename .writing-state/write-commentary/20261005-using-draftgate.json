@@ -6,12 +6,13 @@
   "cycle": 1,
   "entry_gate": "G1",
   "skipped_by_user": [],
-  "current_gate": "G4",
+  "current_gate": "G5",
   "completed": [
     "G1",
     "G2",
-    "G3"
+    "G3",
+    "G4"
   ],
   "status": "in_progress",
-  "article_revision": "94181b354d8a2de9eee53caa21e2054a769654e9"
+  "article_revision": "1bd349c77f44d70af0236875ea0043d8eb42c7fc"
 }
