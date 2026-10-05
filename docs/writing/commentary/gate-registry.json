@@ -19,9 +19,11 @@
     },
     {
       "id": "G3",
-      "name": "Argument Architecture",
+      "name": "Argument Architecture + Draft Construction",
       "rule": "gates/03-argument-architecture.md",
-      "resources": ["structure-rules.md"],
+      "resources": [
+        "structure-rules.md"
+      ],
       "allow_no_change": false
     },
     {
@@ -42,7 +44,9 @@
       "id": "G6",
       "name": "Paragraph Organization",
       "rule": "gates/06-paragraph-organization.md",
-      "resources": ["language-rules.md"],
+      "resources": [
+        "language-rules.md"
+      ],
       "allow_no_change": false
     },
     {
@@ -57,5 +61,7 @@
       "allow_no_change": false
     }
   ],
-  "global_resources": ["../ARTICLE_TEMPLATE.md"]
+  "global_resources": [
+    "../ARTICLE_TEMPLATE.md"
+  ]
 }

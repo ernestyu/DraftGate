@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 
 WORKFLOW_DIR = PurePosixPath("docs/writing/commentary")
 REGISTRY_REL = WORKFLOW_DIR / "gate-registry.json"
+CUSTOM_RULES_DIR = PurePosixPath(".writing-rules")
 ARTICLE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 BLOB_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
@@ -36,6 +37,28 @@ def load_registry(root: Path) -> dict:
 
 def gate_ids(registry: dict) -> list[str]:
     return [gate["id"] for gate in registry["gates"]]
+
+
+def custom_rule_rel(gate_id: str) -> PurePosixPath:
+    return CUSTOM_RULES_DIR / f"{gate_id}.md"
+
+
+def validate_custom_rules(root: Path, registry: dict) -> list[str]:
+    failures: list[str] = []
+    directory = root / CUSTOM_RULES_DIR
+    if not directory.exists():
+        return failures
+    if not directory.is_dir():
+        return [".writing-rules must be a directory"]
+
+    allowed = {f"{gate_id}.md" for gate_id in gate_ids(registry)}
+    allowed.add(".gitkeep")
+    for child in sorted(directory.iterdir(), key=lambda p: p.name):
+        if child.name not in allowed:
+            failures.append(f"unexpected Custom Rules entry: .writing-rules/{child.name}")
+        elif child.name != ".gitkeep" and not child.is_file():
+            failures.append(f"Custom Rules entry must be a file: .writing-rules/{child.name}")
+    return failures
 
 
 def validate_registry(root: Path) -> list[str]:
@@ -75,6 +98,7 @@ def validate_registry(root: Path) -> list[str]:
         for rel in resources:
             if not isinstance(rel, str) or not (root / normalize(WORKFLOW_DIR, rel)).is_file():
                 failures.append(f"{gate.get('id')} resource missing: {rel}")
+    failures += validate_custom_rules(root, registry)
     return failures
 
 

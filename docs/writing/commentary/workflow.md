@@ -12,13 +12,27 @@ articles/<article_id>/index.md
 
 Reduce reader effort without reducing idea density.
 
+## Pre-G1 brainstorm
+
+Before state initialization, users may hold an open brainstorm with the Agent.
+
+Pre-G1 is outside the state machine:
+
+- no state file;
+- no Gate ID;
+- no PASS / FAIL;
+- no transition;
+- free exploration is allowed.
+
+Use Pre-G1 to make the rough topic, motivation, and direction clear enough that G1 can make a real commitment. Do not model Pre-G1 as G0.
+
 ## Entry assessment
 
 Before starting a workflow or a new cycle, the agent may recommend the earliest relevant gate:
 
 - main question / thesis → G1
 - scope / branch control → G2
-- argument architecture → G3
+- argument architecture / incomplete first draft → G3
 - reader accessibility → G4
 - claim strength / evidence boundary → G5
 - paragraph organization → G6
@@ -43,11 +57,37 @@ If several problems exist, recommend the earliest gate. A non-G1 entry requires 
 
 1. Read `gate-registry.json`.
 2. Load global resources.
-3. Read the validated state and current gate.
-4. Load only the current gate rule and its declared resources.
-5. Write authorized edits directly to `articles/<article_id>/index.md`.
-6. Apply freshness, same-commit, and transition rules.
-7. Stop.
+3. Read the validated state and current gate Gx.
+4. Load only Gx Core rule and Gx declared Core resources.
+5. If `.writing-rules/Gx.md` exists, load that file as Gx Persistent Custom Rules.
+6. Do not load Custom Rules from any other Gate into execution, editing, evaluation, or PASS / FAIL decisions.
+7. If the user explicitly requests maintenance of another Gate's Custom Rule, that file may be read only for rule maintenance; it still does not participate in the current Gate.
+8. Write authorized edits directly to `articles/<article_id>/index.md`.
+9. Apply freshness, same-commit, and transition rules.
+10. Stop.
+
+Core always has higher authority than Custom Rules. If a Custom Rule conflicts with Core:
+
+```text
+Core applies
+→ conflicting Custom Rule is ignored for this execution
+→ explicitly inform the user
+→ do not modify workflow state merely because of the conflict
+```
+
+## Persistent Custom Rules
+
+Persistent Custom Rules are optional per-Gate user preferences stored as:
+
+```text
+.writing-rules/G1.md
+...
+.writing-rules/G7.md
+```
+
+Users are not expected to edit these files manually. The intended interaction is conversational: the user explicitly asks the Agent to keep, change, or remove a long-term preference, and the Agent maintains the corresponding Gate file.
+
+Do not automatically turn one-off article edits into persistent rules.
 
 ## Runtime state
 
@@ -158,6 +198,30 @@ Reopen:
 - cannot be used after completion.
 
 After completion, use a new cycle instead.
+
+## New cycles and free editing
+
+When `status = complete`, DraftGate releases the article. The user may edit the Markdown freely with an Agent or by hand; those edits do not automatically become Persistent Custom Rules.
+
+For systematic rework, start a new cycle from the earliest affected Gate:
+
+```text
+thesis → G1
+scope → G2
+architecture or draft development → G3
+reader accessibility → G4
+claim / evidence → G5
+paragraph organization → G6
+language / pattern cleanup → G7
+```
+
+Use:
+
+```bash
+./writing start-cycle --article-id <id> --from Gx
+```
+
+Repeated cycles are normal. DraftGate does not assume one G1→G7 pass creates a permanently final article.
 
 ## Boundary
 

@@ -26,7 +26,7 @@ DraftGate 把这些职责拆成窄而明确的 Gate，每个 Gate 只解决一�
 
 1. G1 — 主问题与 Thesis
 2. G2 — 范围与支线控制
-3. G3 — 论证结构
+3. G3 — 论证结构与完整初稿展开
 4. G4 — 读者可理解性
 5. G5 — 判断与证据边界
 6. G6 — 段落组织
@@ -55,6 +55,11 @@ DraftGate 不依赖 Hugo、CMS、front matter、封面图或任何发布系统�
 不需要 Docker、数据库、模型服务器，也不需要 self-hosted runner。
 
 ## 快速开始
+
+正常使用时，先在 GitHub 上 Fork 本仓库，把 Fork 后属于你自己的仓库链接交给能够读写 GitHub 的 ChatGPT 或其他 Agent。之后的文章、state、Custom Rules 和 CI 都发生在你的 Fork 中。
+
+正式初始化 state 前，先做 **Pre-G1 brainstorm**。这一阶段只和 AI 发散讨论主题、动机、可能的问题和大致方向，没有 state，也没有 PASS / FAIL。等你已经大致知道为什么要写、想讨论什么，再进入 G1。
+
 
 Clone 仓库后，先创建一篇文章：
 
@@ -96,6 +101,20 @@ execute G2
 
 Agent 不应该预先执行后续 Gate。讨论、判断和取舍仍然是流程的一部分。DraftGate 是一个人机协作的编辑控制系统，不是一键生成文章的工具。
 
+G3 还负责在需要时把 seed、outline 或 section skeleton 展开成可以连续阅读的完整初稿。只有标题和少量职责说明，不能因为结构正确就通过 G3。
+
+## Persistent Custom Rules
+
+DraftGate Core 保持语言和作者中立。用户长期形成的个人偏好放在第二层 Custom Rules 中：
+
+```text
+.writing-rules/G1.md
+...
+.writing-rules/G7.md
+```
+
+普通用户不需要手工编辑这些文件。只需要在和 Agent 的对话中明确说某条偏好要长期保留、修改或删除，Agent 负责维护对应 Gate 的规则。执行某个 Gate 时，只允许该 Gate 的 Custom Rules 参与；如果 Custom Rule 与 Core 冲突，以 Core 为准。
+
 ## 本地命令
 
 ```bash
@@ -111,6 +130,8 @@ Agent 不应该预先执行后续 Gate。讨论、判断和取舍仍然是流程
 ```
 
 `advance` 会根据当前 working tree 中的文章更新 state。一个合法的 CHANGED Gate commit 必须同时包含文章修改和对应的 state transition。
+
+如果当前 cycle 还没有完成，而你对刚完成的 Gate 不满意，可以在执行下一 Gate 前使用 `reopen`。G7 完成后，文章会释放为普通 Markdown，可以自由修改；如果希望再次系统检查，就从最早受影响的 Gate 开新 cycle，例如结构或正文展开不满意时使用 `start-cycle --from G3`。多轮 cycle 是正常用法。
 
 Gate commit 使用类似下面的 trailers：
 

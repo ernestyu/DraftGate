@@ -1,10 +1,10 @@
-# G3 — Argument Architecture
+# G3 — Argument Architecture + Draft Construction
 
 ## Goal
 
 按读者理解问题的顺序组织章节和论证，而不是按作者研究过程排列。
 
-G3 先完成 human-in-the-loop Narrative Mode Decision，再基于用户选择完成正式 argument architecture。
+G3 先完成 human-in-the-loop Narrative Mode Decision，再基于用户选择完成正式 argument architecture。Architecture 稳定后，G3 还必须判断当前文章是否已经构成 substantive first draft；如果仍然只是 seed、outline、section skeleton 或 materially incomplete draft，则继续完成 Draft Construction 后才能 PASS。
 
 Narrative mode 负责决定文章如何推进；central explanatory frame / narrative anchor 只是其中一种可选结构工具，不是所有文章的默认写法。
 
@@ -425,6 +425,87 @@ Compression Test 不要求正文只有 3–4 个观点。
 
 它只检查全文是否存在一条可压缩的 unified reasoning skeleton。
 
+## Draft Construction
+
+Architecture 完成后，G3 进入 Draft Construction Check。
+
+核心目标：
+
+~~~text
+major section responsibility
+→ substantive prose that performs that responsibility
+~~~
+
+### When expansion is required
+
+如果当前文章仍然属于以下任一种状态：
+
+- seed draft；
+- outline；
+- section skeleton；
+- placeholder-heavy draft；
+- major section 只有一两句职责说明；
+- materially incomplete draft；
+
+G3 必须把 major sections 展开成可连续阅读的 complete first draft，不能以 outline-only 状态 PASS。
+
+以下内容不能被视为完成 section responsibility：
+
+- one-line placeholder；
+- section-purpose note；
+- outline bullets；
+- “本节将解释……”一类只描述未来内容的句子；
+- heading 下没有 substantive development。
+
+不得使用固定 word count、paragraph count、sentence count 或 character threshold 判断 draft completeness。
+
+### Existing substantive prose
+
+如果已有正文已经完成其 section responsibility，应尽量保留。
+
+G3 只做满足当前 architecture 和 Draft Construction Check 所必需的修改，不得因为进入 G3 就重新生成整篇文章。
+
+### Allowed Draft Construction work
+
+G3 可以为了构造完整正文：
+
+- 展开已经由 G1 / G2 / G3 授权的解释；
+- 展开 scope 内已经存在的 mechanism；
+- 把 section responsibility 写成 substantive prose；
+- 使用用户已经提供或文章已经包含的事实、例子和材料；
+- 写必要的段落、正常句子和过渡；
+- 让 major sections 与 Explanatory Spine 连续衔接；
+- 应用 G3 Custom Rules。
+
+### Downstream authority boundary
+
+核心边界：
+
+~~~text
+draft construction necessity
+!=
+downstream Gate responsibility
+~~~
+
+G3 可以为了构造 complete first draft 写解释、段落、过渡和正常句子。
+
+但 G3 不得以独立目标执行：
+
+- G4 accessibility audit；
+- G5 adversarial / evidence pressure test；
+- G6 paragraph audit / restructuring；
+- G7 language / pattern / AI-trace cleanup。
+
+如果 G3 看见这些 downstream 问题，除非修正是产生 coherent substantive draft 所严格必需，否则留给对应 Gate。
+
+G3 还不得：
+
+- 发明事实、数据、quotation、source 或 evidence；
+- 把 unsupported factual claim 当作已验证事实；
+- 为增加长度而扩写；
+- 越过 G2 scope；
+- silently rewrite G1 thesis。
+
 ## Central frame decision
 
 Narrative Mode Decision 完成后，G3 继续保留：
@@ -546,6 +627,8 @@ Central frame 和 narrative mode 都不是不可触碰的修辞核心。
 - 建立 Material Hierarchy
 - 判断 central frame 是否 USED / NOT NEEDED
 - 删除或降级会制造竞争主线的 supporting material
+- 在需要时把 seed / outline / incomplete draft 展开成 complete first draft
+- 为 Draft Construction 写必要的解释、段落、过渡和正常句子
 
 ## Forbidden
 
@@ -562,7 +645,11 @@ Central frame 和 narrative mode 都不是不可触碰的修辞核心。
 - 为了保住 frame 修改 G1 thesis 或 G2 scope
 - 引入只在开头出现、后文不再承担功能的 decorative hook
 - 把 phenomenon-first 当成全局要求
-- 做逐句语言润色
+- 把 G4 accessibility audit 当作 G3 独立目标
+- 把 G5 adversarial / evidence pressure test 当作 G3 独立目标
+- 把 G6 paragraph audit / restructuring 当作 G3 独立目标
+- 把 G7 language / pattern / AI-trace cleanup 当作 G3 独立目标
+- 做逐句语言润色作为独立 cleanup 任务
 - 做 AI trace cleanup
 
 ## G1 / G3 authority boundary
@@ -625,7 +712,12 @@ G3 PASS 前必须全部满足：
 11. Central frame decision 与 narrative mode 一致；
 12. Compression Test = PASS；
 13. G1 thesis unchanged；
-14. G2 scope unchanged。
+14. G2 scope unchanged；
+15. Draft Construction Check = PASS；
+16. 每个 major section 已有 substantive prose 完成其 section responsibility；
+17. 文章可作为 complete first draft 连续阅读，而不是 outline / placeholder skeleton；
+18. 已有足够正文已尽量保留，只做必要修改；
+19. G4–G7 downstream responsibilities 未被 G3 作为独立目标执行。
 
 如果等待用户选择：
 

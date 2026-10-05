@@ -24,7 +24,7 @@ Built-in gates:
 
 1. G1 — Main Question & Thesis
 2. G2 — Scope & Branch Control
-3. G3 — Argument Architecture
+3. G3 — Argument Architecture + Draft Construction
 4. G4 — Reader Accessibility
 5. G5 — Claim & Evidence Boundary
 6. G6 — Paragraph Organization
@@ -54,7 +54,11 @@ No Docker, database, model server, or self-hosted runner is required.
 
 ## Quick start
 
-Clone the repository, then create an article:
+For normal use, fork this repository on GitHub first, then give the URL of your fork to a GitHub-capable ChatGPT or other Agent. Work in your fork so article commits, state files, Custom Rules, and CI runs belong to your own repository.
+
+Before initializing state, use **Pre-G1** as an open brainstorm with the Agent. Discuss the topic, motivation, possible question, and rough direction freely. Pre-G1 has no state and no PASS / FAIL. Initialize DraftGate only after the idea is clear enough for G1 to make a real commitment.
+
+Clone your fork, then create an article:
 
 ```bash
 ./writing bootstrap --article-id 20261005-example-topic --title "Provisional Title"
@@ -94,6 +98,20 @@ execute G2
 
 The agent should not pre-run later gates. Human discussion and decisions remain part of the workflow; DraftGate is an editorial control system, not a one-shot article generator.
 
+G3 is also where an outline becomes a substantive first draft when needed. A seed or section skeleton cannot pass G3 merely because the headings are correct.
+
+## Persistent Custom Rules
+
+DraftGate Core remains author-neutral. Long-term personal preferences live in an optional second layer:
+
+```text
+.writing-rules/G1.md
+...
+.writing-rules/G7.md
+```
+
+Users do not need to edit these files manually. Tell the Agent conversationally that a preference should be kept, changed, or removed as a long-term rule. Only the current Gate's Custom Rules may participate in that Gate. Core always wins on conflict.
+
 ## Local commands
 
 ```bash
@@ -109,6 +127,8 @@ The agent should not pre-run later gates. Human discussion and decisions remain 
 ```
 
 `advance` updates the state file from the current working-tree article. A valid CHANGED gate commit must contain both the article change and the matching state transition.
+
+If the most recently completed Gate is unsatisfactory and the cycle is still in progress, use `reopen` before running the next Gate. After G7 completes, the article is released for ordinary editing. For systematic rework, start a new cycle from the earliest affected Gate, for example `start-cycle --from G3` when structure or draft development needs another pass. Repeated cycles are normal.
 
 A gate commit uses trailers such as:
 

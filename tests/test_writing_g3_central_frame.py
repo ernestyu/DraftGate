@@ -121,6 +121,29 @@ class WritingG3CentralFrameTests(unittest.TestCase):
         self.assertIn("report G1 conflict", self.g3)
         self.assertIn("do not advance G3", self.g3)
 
+    def test_g3_requires_draft_construction(self):
+        self.assertIn("Draft Construction", self.g3)
+        self.assertIn("complete first draft", self.g3)
+        self.assertIn("outline-only", self.g3)
+        self.assertIn("placeholder", self.g3)
+
+    def test_g3_draft_completeness_has_no_length_threshold(self):
+        self.assertIn("不得使用固定 word count", self.g3)
+        self.assertIn("paragraph count", self.g3)
+        self.assertIn("character threshold", self.g3)
+
+    def test_g3_preserves_sufficient_existing_prose(self):
+        self.assertIn("已有正文已经完成其 section responsibility，应尽量保留", self.g3)
+        self.assertIn("只做满足当前 architecture 和 Draft Construction Check 所必需的修改", self.g3)
+
+    def test_g3_does_not_take_over_downstream_gates(self):
+        self.assertIn("draft construction necessity", self.g3)
+        self.assertIn("downstream Gate responsibility", self.g3)
+        self.assertIn("G4 accessibility audit", self.g3)
+        self.assertIn("G5 adversarial / evidence pressure test", self.g3)
+        self.assertIn("G6 paragraph audit / restructuring", self.g3)
+        self.assertIn("G7 language / pattern / AI-trace cleanup", self.g3)
+
 
 if __name__ == "__main__":
     unittest.main()
