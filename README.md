@@ -1,14 +1,16 @@
-# Open Writing Workflow
+# DraftGate
+
+**English** | [简体中文](README.zh-CN.md)
 
 A Git-native, staged editorial workflow for AI-assisted long-form writing.
 
-The project turns one Markdown article into a stateful G1→G7 process. The language model handles judgment and editing; Git records document revisions; deterministic validators enforce gate order, freshness, and legal state transitions.
+DraftGate turns one Markdown article into a stateful G1→G7 process. The language model handles judgment and editing; Git records document revisions; deterministic validators enforce gate order, freshness, and legal state transitions.
 
 The built-in editorial rules are intentionally language-neutral. They focus on reasoning, structure, evidence, paragraph responsibility, and mechanical repetition rather than a particular author's voice. The same workflow can be used for Chinese or English writing.
 
 ## Why
 
-Large writing prompts often mix thesis selection, scope control, structure, evidence boundaries, paragraph organization, and final language cleanup in one execution. This workflow separates those responsibilities into narrow gates and gives each gate an explicit contract.
+Large writing prompts often mix thesis selection, scope control, structure, evidence boundaries, paragraph organization, and final language cleanup in one execution. DraftGate separates those responsibilities into narrow gates and gives each gate an explicit contract.
 
 Built-in gates:
 
@@ -82,7 +84,7 @@ execute G2
 ...
 ```
 
-The agent should not pre-run later gates. Human discussion and decisions remain part of the workflow; the project is an editorial control system, not a one-shot article generator.
+The agent should not pre-run later gates. Human discussion and decisions remain part of the workflow; DraftGate is an editorial control system, not a one-shot article generator.
 
 ## Local commands
 
