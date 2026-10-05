@@ -16,7 +16,7 @@ DraftGate 的出发点不是“AI 不会写”，而是复杂写作里同时存�
 
 这些问题当然可以一次全部告诉模型，但那样会带来两个麻烦。第一，模型必须同时记住大量不同层级的约束；第二，修改一个层级时，很容易顺手动到已经确定的另一个层级。例如你只是想改一段语言，模型却顺便换了论点；你只是想补一个例子，它又重新安排了文章结构。
 
-DraftGate 的处理方式是把这些责任拆开。一次 invocation 只执行一个 Gate；当前 Gate 完成后，文章和 state 一起提交，然后停止。下一步是否继续，由用户明确决定。这样做的目的不是把写作变成流水线，而是让人的判断有清楚的落点：现在是在讨论 thesis，就只讨论 thesis；现在是在做结构，就不要同时把语言和证据全部重做。
+DraftGate 的处理方式是把这些责任拆开。一次 invocation，也就是一次明确的 Agent 执行，只处理一个 Gate；当前 Gate 完成后，文章和 state 一起提交，然后停止。下一步是否继续，由用户明确决定。这样做的目的不是把写作变成流水线，而是让人的判断有清楚的落点：现在是在讨论 thesis，就只讨论 thesis；现在是在做结构，就不要同时把语言和证据全部重做。
 
 这也是 human-in-the-loop 在 DraftGate 里的实际含义。人不是最后才来“验收”AI 写出的文章，而是在每一个重要节点上参与决定。
 
@@ -87,13 +87,13 @@ G1 解决的是最上层的问题：**这篇文章到底在回答什么，以及
 
 这篇教程进入 G1 时，我们已经通过 Pre-G1 知道自己不只是想写一个“软件说明”。最后冻结的主问题是：“怎样用 DraftGate，把 AI 辅助写作从一次难以控制的整篇生成，变成一个人可以逐步讨论、判断、修改和验证的过程？”
 
-同时冻结的核心判断是：对于需要反复判断、修改和核查的复杂长文，human-in-the-loop 仍然很重要；DraftGate 通过 G1–G7 把不同职责拆开，再用 Git state 和 CI 把执行顺序与验证放到模型之外。
+同时冻结的核心判断，也就是 thesis，是：对于需要反复判断、修改和核查的复杂长文，human-in-the-loop 仍然很重要；DraftGate 通过 G1–G7 把不同职责拆开，再用 Git state 和 CI 把执行顺序与验证放到模型之外。这里的 thesis 可以理解为文章准备给出的核心回答。
 
 G1 完成后，state 会从 `current_gate = G1` 推进到 `current_gate = G2`，并把 G1 写入 completed。此时最好停下来确认：这个问题真的是你想写的吗？如果不是，就不要进入 G2。
 
 ## 5. G2 — Scope & Branch Control
 
-G2 控制的是文章边界。很多文章的问题不是没有内容，而是什么都想写。在这一 Gate，需要把材料分成几类：哪些属于主线，哪些只是 supporting branch，哪些虽然有意思，但不应该进入这篇文章。
+G2 控制的是文章边界，也就是 scope：哪些内容属于这篇文章，哪些内容即使相关，也应该留在外面。很多文章的问题不是没有内容，而是什么都想写。在这一 Gate，需要把材料分成几类：哪些属于主线，哪些只是 supporting branch，哪些虽然有意思，但不应该进入这篇文章。
 
 这篇教程在 G2 明确冻结了三块主线内容：使用前准备、Pre-G1 brainstorm、G1–G7 的真实执行过程。同时把更广的 Prompt Engineering、Agent 架构、CMS 和发布系统排除在外。这些内容并非不重要，只是如果全部加入，教程会从“怎样使用 DraftGate”滑向“AI 写作系统设计综述”。
 
@@ -103,15 +103,15 @@ G2 完成后，文章已经知道“要回答什么”和“哪些东西属于�
 
 G3 是这套系统里非常关键的一步，而且也是我们第一次 dogfood 后修改最多的一步。
 
-第一部分是 Argument Architecture。Agent 会根据 G1 的主问题和 G2 的 scope，提出 1–3 个适合的 narrative mode，例如 question-driven、case-driven、frame-driven 或 hybrid。这个选择不能由 Agent 自动决定，用户必须明确批准。
+第一部分是 Argument Architecture。Agent 会根据 G1 的主问题和 G2 的 scope，提出 1–3 个适合的 narrative mode，也就是整篇文章主要靠什么方式向前推进。例如 question-driven 表示围绕一个问题逐层深入，case-driven 表示跟随一个真实案例推进，hybrid 则允许两者组合，但必须有一个明确主线。这个选择不能由 Agent 自动决定，用户必须明确批准。
 
 这篇教程选择的是 question-driven 作为 primary driver，同时把这篇教程自己的生成过程作为 case-driven secondary device。也就是说，文章主要围绕“怎样把 AI 写作变成可控过程”这个问题推进，同时用真实 dogfood 过程不断落地。
 
-接着，G3 需要建立 Explanatory Spine。它不是目录，而是整篇文章真正的推理链。本文的 spine 可以压缩成：一次性生成把多种写作职责同时交给模型，因此难以稳定控制；human-in-the-loop 需要把人的判断拆成连续阶段；DraftGate 再用 state 和 CI 把这些阶段变成可执行、可验证的流程。
+接着，G3 需要建立 Explanatory Spine。它不是目录，而是整篇文章真正的推理链：如果把标题、例子和修辞都拿掉，文章从起点怎样一步步推到最后判断。本文的 spine 可以压缩成：一次性生成把多种写作职责同时交给模型，因此难以稳定控制；human-in-the-loop 需要把人的判断拆成连续阶段；DraftGate 再用 state 和 CI 把这些阶段变成可执行、可验证的流程。
 
-第二部分是 Draft Construction。这个部分是在第一次 dogfood 后补进去的。第一次运行时，G3 虽然搭出了完整结构，但很多 section 只有一两句话。随后 G4–G7 都严格按照自己的职责工作，最后所有 Gate 都 PASS，文章却仍然只是一个“结构正确的 outline”。这暴露出一个很实际的问题：没有任何 Gate 明确负责把 skeleton 展开成完整 first draft。
+第二部分是 Draft Construction。这个部分是在第一次 dogfood 后补进去的。第一次运行时，G3 虽然搭出了完整结构，但很多 section 只有一两句话，只能算 section skeleton，也就是“这一节应该做什么”已经知道了，但真正的正文还没有展开。随后 G4–G7 都严格按照自己的职责工作，最后所有 Gate 都 PASS，文章却仍然只是一个“结构正确的 outline”。这暴露出一个很实际的问题：没有任何 Gate 明确负责把 skeleton 展开成完整 first draft。
 
-现在 G3 明确承担这个责任。如果文章还是 seed、outline、section skeleton 或 placeholder-heavy draft，G3 不能 PASS。每个 major section 都必须有 substantive prose，真正完成这一节的职责。
+现在 G3 明确承担这个责任。如果文章还是 seed、outline、section skeleton 或 placeholder-heavy draft，G3 不能 PASS。每个 major section 都必须有 substantive prose，也就是实际承担解释、论证或教程职责的完整正文，而不只是标题和提纲说明。
 
 这并不意味着 G3 要顺手完成所有后续工作。它可以写正文、解释和过渡，但不能把 G4 的可理解性 audit、G5 的证据压力测试、G6 的段落整理或 G7 的最终语言清理提前做掉。
 
@@ -121,13 +121,13 @@ G3 是这套系统里非常关键的一步，而且也是我们第一次 dogfood
 
 G4 不再决定文章“讲什么”，而是检查读者能不能跟上。比如，文章里出现 fork、state、CI、Gate、human-in-the-loop 这些词时，技术用户可能觉得很自然，但普通读者未必知道它们分别是什么意思。G4 要检查的是这种理解门槛。
 
-在这篇教程的第一轮里，G4 就补过这些解释：fork 是把仓库复制到自己的 GitHub 账户；state 是记录当前 Gate、已完成 Gate 和文章 revision 的 JSON 文件；CI 是每次提交后自动执行的验证；Agent 指能够读写仓库并提交 Git 变更的 AI 工具。
+在这篇教程的第一轮里，G4 就补过这些解释：fork 是把仓库复制到自己的 GitHub 账户；state 是记录当前 Gate、已完成 Gate 和文章 revision 的 JSON 文件；这里的 revision 指文章在 Git 中对应的版本标识；CI 是每次提交后自动执行的验证；Agent 指能够读写仓库并提交 Git 变更的 AI 工具。
 
 G4 的判断标准不是“术语越少越好”，而是读者第一次遇到重要概念时，有没有足够的解释可以继续往下读。
 
 ## 8. G5 — Claim & Evidence Boundary
 
-G5 负责的是判断强度和证据边界。它会问：文章里的结论有没有写得太绝对？有没有合理的替代解释？最强反驳是什么？哪些话需要加条件？
+G5 负责的是判断强度和证据边界。这里的 claim 可以理解为文章正在要求读者相信的判断。G5 会问：这些判断有没有写得太绝对？有没有合理的替代解释？最强反驳是什么？哪些话需要加条件？
 
 这篇教程第一轮就遇到过一个典型问题。原文一开始写的是“好文章仍然需要 human-in-the-loop”。这个判断太宽，因为简单、格式固定、低风险的写作任务，完全可能一次生成就够用。
 
@@ -143,7 +143,7 @@ G6 只看段落职责。它不规定“一个段落应该多少字”，也不�
 
 ## 10. G7 — Final Language & Pattern Audit
 
-G7 是最后的语言和机械模式检查。到这里，主问题、scope、architecture、claim boundary、paragraph organization 都已经冻结，G7 不应该重新设计文章。
+G7 是最后的语言和机械模式检查。到这里，主问题、scope、architecture、claim boundary、paragraph organization 都已经冻结，也就是这些更上层的决定不再由 G7 重做。G7 只处理最后的表达层。
 
 它主要检查重复的 meta-signposting、连续使用同一种句式、模板化 section opening、固定强结尾、机械平行以及其它 AI trace。第一轮里，G7 清理过连续出现的“这一部分……”“这里的……”“最后回看……”等说明性壳子，但没有重新改变结构。
 
