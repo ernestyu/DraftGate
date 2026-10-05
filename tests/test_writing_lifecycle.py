@@ -23,6 +23,7 @@ def load_module(name: str, path: Path):
 VW = load_module("vw_lifecycle_test", REPO_ROOT / "scripts" / "validate-writing-workflow.py")
 WS = load_module("ws_lifecycle_test", REPO_ROOT / "scripts" / "writing-state.py")
 WL = load_module("wl_lifecycle_test", REPO_ROOT / "scripts" / "writing-lifecycle.py")
+VC = load_module("vc_lifecycle_test", REPO_ROOT / "scripts" / "validate-writing-commit.py")
 
 
 class WritingLifecycleTests(unittest.TestCase):
@@ -191,6 +192,50 @@ class WritingLifecycleTests(unittest.TestCase):
         terminal = self.complete_g7()
         with self.assertRaisesRegex(WL.LifecycleError, "unauthorized durable"):
             WL.closeout(self.article_id, terminal, [], self.root)
+
+
+    def test_closeout_commit_and_evidence_history_validate(self):
+        result = self.begin_g7()
+        init_commit = self.git("rev-parse", "HEAD")
+        terminal = self.complete_g7()
+        out = WL.closeout(self.article_id, terminal, [], self.root)
+        self.assertEqual(VC.validate_commit(self.root, out["main_commit"]), [])
+        self.git("merge-base", "--is-ancestor", init_commit, f"refs/tags/{out['evidence']}^{{}}")
+
+    def test_archive_based_start_cycle_commit_validates_and_keeps_c1(self):
+        self.begin_g7()
+        terminal = self.complete_g7()
+        first = WL.closeout(self.article_id, terminal, [], self.root)
+        c1_archive = self.root / WL.archive_rel(self.article_id, 1)
+        c1_bytes = c1_archive.read_bytes()
+        c1_tag = self.git("rev-parse", f"refs/tags/{first['evidence']}^{{}}")
+
+        second = WL.begin(self.article_id, "G7", None, self.root)
+        start_commit = self.git("rev-parse", "HEAD")
+        self.assertEqual(VC.validate_commit(self.root, start_commit), [])
+        terminal2 = self.complete_g7()
+        WL.closeout(self.article_id, terminal2, [], self.root)
+
+        self.assertTrue(c1_archive.is_file())
+        self.assertTrue((self.root / WL.archive_rel(self.article_id, 2)).is_file())
+        self.assertEqual(c1_archive.read_bytes(), c1_bytes)
+        self.assertEqual(self.git("rev-parse", f"refs/tags/{first['evidence']}^{{}}"), c1_tag)
+
+    def test_maintenance_cannot_delete_in_progress_state_or_bound_article(self):
+        self.begin_g7()
+        state_path = WL.active_rel(self.article_id)
+        article_path = WL.article_rel(self.article_id)
+
+        self.git("rm", state_path)
+        self.git("commit", "-m", f"bad maintenance\n\nWriting-Workflow: maintenance\nWriting-Article: {self.article_id}\nWriting-Maintenance: temporary-artifact")
+        failures = VC.validate_commit(self.root, "HEAD")
+        self.assertTrue(any("in-progress active state" in x for x in failures))
+        self.git("reset", "--hard", "HEAD^")
+
+        self.git("rm", article_path)
+        self.git("commit", "-m", f"bad maintenance\n\nWriting-Workflow: maintenance\nWriting-Article: {self.article_id}\nWriting-Maintenance: temporary-artifact")
+        failures = VC.validate_commit(self.root, "HEAD")
+        self.assertTrue(any("in-progress bound article" in x for x in failures))
 
 
 if __name__ == "__main__":
