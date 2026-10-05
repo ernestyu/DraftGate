@@ -43,11 +43,20 @@ This SPEC MUST NOT change:
 
 ### 3.1 Active state
 
-An in-progress cycle state at:
+The active-state path stores the current unarchived cycle state at:
 
 `.writing-state/write-commentary/<article-id>.json`
 
-Only active/resumable workflows live in this directory.
+That current unarchived state may be:
+
+- `in_progress`; or
+- temporarily `complete` after G7 completion and before successful closeout/archive.
+
+A G7-completed state may therefore remain at the active-state path only during the closeout window.
+
+After successful main closeout, the completed cycle state MUST NOT remain at the active-state path. It MUST exist only in the cycle-aware archive representation defined by this SPEC.
+
+Only the current unarchived cycle state lives in this directory.
 
 ### 3.2 Archived state
 
