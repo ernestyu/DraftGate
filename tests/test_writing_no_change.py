@@ -26,7 +26,7 @@ VC = load_module("vc_no_change_test", REPO_ROOT / "scripts" / "validate-writing-
 
 class WritingNoChangeTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
+        self.tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.root = Path(self.tmp.name)
         self.article_id = "20261004-no-change"
         self.article_path = f"articles/{self.article_id}/index.md"
@@ -42,6 +42,8 @@ class WritingNoChangeTests(unittest.TestCase):
         self.git("init")
         self.git("config", "user.name", "NO_CHANGE Test")
         self.git("config", "user.email", "no-change@example.invalid")
+        self.git("config", "gc.auto", "0")
+        self.git("config", "maintenance.auto", "false")
         self.git("add", ".")
         self.git("commit", "-m", "initial")
 
