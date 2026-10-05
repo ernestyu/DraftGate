@@ -232,7 +232,7 @@ This project edits Markdown only. It does not publish, build a website, generate
 
 Normal cycles run on `writing/<article-id>/c<cycle>`. Gate commits remain intact on that branch. The lifecycle begin commit records the exact starting `main` commit as `Writing-Main-Base`; the writing branch must not be rebased or merged with `main` during the cycle.
 
-After G7 and CI PASS, closeout:
+Gate commits on a remote-backed repository must be pushed to the writing branch so CI validates the exact commit. After G7 and CI PASS, closeout:
 
 1. verifies the terminal G7 commit;
 2. creates or idempotently verifies `writing-evidence/<article-id>/c<cycle>`;
@@ -240,7 +240,8 @@ After G7 and CI PASS, closeout:
 4. stores the exact completed state at `.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`;
 5. removes the completed active-state representation from the main closeout tree;
 6. preserves durable Persistent Custom Rules changes;
-7. deletes the writing branch only after all verification passes.
+7. when `origin` exists, publishes the evidence tag and closeout commit against freshly fetched `origin/main`, verifies remote `main`, then deletes the remote writing branch;
+8. deletes the local writing branch only after all verification passes.
 
 If current `main` changed since the writing branch base, non-conflicting changes are preserved. A conflict on the article, Custom Rules, or another authorized durable path stops closeout without deleting the writing branch.
 

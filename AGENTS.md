@@ -23,7 +23,7 @@ Normal article work should run on `writing/<article-id>/c<cycle>`, not directly 
 
 For a new or archived article cycle, prefer `./writing begin ...`. After G7, verify CI PASS for the exact terminal G7 commit before running `./writing closeout --article-id <id> --ci-passed-for <G7_SHA>`.
 
-Closeout is fail-closed. Do not delete a writing branch before evidence ref, main durable result, and cycle-aware archive are verified.
+After every Gate commit on a writing branch, push that branch so GitHub Actions can validate the exact Gate commit. Closeout is fail-closed: with an `origin` remote it fetches current `origin/main` and tags, publishes the evidence tag, pushes the high-level closeout commit to `main`, verifies the remote main SHA, and deletes the remote writing branch last. Do not delete a writing branch before evidence ref, main durable result, and cycle-aware archive are verified.
 
 Evidence refs are write-once by policy: an existing same-target ref is accepted; a different-target ref must stop the operation.
 

@@ -38,6 +38,62 @@ def ensure_clean(root: Path) -> None:
 def current_branch(root: Path) -> str:
     return git(root, "branch", "--show-current")
 
+
+def has_origin(root: Path) -> bool:
+    return subprocess.run(["git", "remote", "get-url", "origin"], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+
+
+def fetch_origin(root: Path) -> None:
+    git(root, "fetch", "origin", "main", "--tags")
+
+
+def sync_main_for_begin(root: Path) -> str:
+    if not has_origin(root):
+        return git(root, "rev-parse", "main")
+    fetch_origin(root)
+    local_main = git(root, "rev-parse", "main")
+    remote_main = git(root, "rev-parse", "refs/remotes/origin/main")
+    if local_main == remote_main:
+        return local_main
+    if git(root, "merge-base", local_main, remote_main) == local_main:
+        git(root, "merge", "--ff-only", "refs/remotes/origin/main")
+        return remote_main
+    raise LifecycleError("local main diverges from origin/main")
+
+
+def current_main_for_closeout(root: Path) -> str:
+    if not has_origin(root):
+        return git(root, "rev-parse", "main")
+    fetch_origin(root)
+    return git(root, "rev-parse", "refs/remotes/origin/main")
+
+
+def remote_branch_exists(root: Path, name: str) -> bool:
+    if not has_origin(root):
+        return False
+    proc = subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", f"refs/heads/{name}"], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return proc.returncode == 0
+
+
+def push_begin_branch(root: Path, name: str) -> None:
+    if has_origin(root):
+        git(root, "push", "-u", "origin", f"HEAD:refs/heads/{name}")
+
+
+def publish_closeout(root: Path, tag: str, closeout_commit: str, current_main: str, branch: str) -> None:
+    if not has_origin(root):
+        git(root, "update-ref", "refs/heads/main", closeout_commit, current_main)
+        return
+
+    # Evidence is published before main; an already-correct remote tag is idempotent.
+    git(root, "push", "origin", f"refs/tags/{tag}:refs/tags/{tag}")
+    if closeout_commit != current_main:
+        git(root, "push", "origin", f"{closeout_commit}:refs/heads/main")
+    remote_main = git(root, "ls-remote", "origin", "refs/heads/main").split()[0]
+    if remote_main != closeout_commit:
+        raise LifecycleError("remote main verification failed")
+    git(root, "update-ref", "refs/heads/main", closeout_commit)
+
 def branch_name(article_id: str, cycle: int) -> str:
     if not VW.valid_article_id(article_id) or cycle < 1:
         raise LifecycleError("invalid article/cycle")
@@ -91,7 +147,7 @@ def begin(article_id: str, entry_gate: str, title: str | None, root: Path) -> di
     archive_failures = VW.validate_archives(root, VW.load_registry(root))
     if archive_failures:
         raise LifecycleError("; ".join(archive_failures))
-    main_base = git(root, "rev-parse", "main")
+    main_base = sync_main_for_begin(root)
     if (root / active_rel(article_id)).exists():
         raise LifecycleError("active state already exists")
     previous_cycle = latest_cycle(root, article_id)
@@ -116,6 +172,7 @@ def begin(article_id: str, entry_gate: str, title: str | None, root: Path) -> di
         op = "start-cycle"
     git(root, "add", active_rel(article_id))
     git(root, "commit", "-m", f"Begin writing cycle {cycle}\n\nWriting-Workflow: {op}\nWriting-Article: {article_id}\nWriting-Main-Base: {main_base}")
+    push_begin_branch(root, name)
     return {"branch": name, "cycle": cycle, "main_base_commit": main_base, "state": state}
 
 def ensure_evidence(root: Path, article_id: str, cycle: int, target: str) -> str:
@@ -230,7 +287,7 @@ def closeout(article_id: str, ci_passed_for: str, root: Path) -> dict:
     base = recorded_main_base(root, article_id, terminal)
     if git(root, "merge-base", base, terminal) != base:
         raise LifecycleError("recorded main base is not an ancestor of terminal commit")
-    current_main = git(root, "rev-parse", "main")
+    current_main = current_main_for_closeout(root)
     paths = durable_paths(root, article_id, base, terminal)
     detect_conflicts(root, base, current_main, terminal, paths)
 
@@ -255,13 +312,15 @@ def closeout(article_id: str, ci_passed_for: str, root: Path) -> dict:
     else:
         msg = f"Close writing cycle {cycle}\n\nWriting-Workflow: closeout\nWriting-Article: {article_id}\nWriting-Cycle: {cycle}"
         closeout_commit = git(root, "commit-tree", tree, "-p", current_main, "-m", msg)
-        git(root, "update-ref", "refs/heads/main", closeout_commit, current_main)
 
     if blob_or_none(root, closeout_commit, active_rel(article_id)) is not None:
         raise LifecycleError("closeout retained active state")
     verify_archive(root, closeout_commit, terminal, article_id, cycle)
 
+    publish_closeout(root, tag, closeout_commit, current_main, expected_branch)
     git(root, "switch", "main")
+    if remote_branch_exists(root, expected_branch):
+        git(root, "push", "origin", "--delete", expected_branch)
     git(root, "branch", "-D", expected_branch)
     return {"main_commit": closeout_commit, "evidence": tag, "archive": archive_rel(article_id, cycle), "deleted_branch": expected_branch}
 
