@@ -1,0 +1,13 @@
+{
+  "schema_version": 4,
+  "workflow": "write-commentary",
+  "article_id": "20261005-using-draftgate",
+  "article_path": "articles/20261005-using-draftgate/index.md",
+  "cycle": 1,
+  "entry_gate": "G1",
+  "skipped_by_user": [],
+  "current_gate": "G1",
+  "completed": [],
+  "status": "in_progress",
+  "article_revision": "05451504f018789fd1d4605caf42ffe61cdf14bd"
+}
