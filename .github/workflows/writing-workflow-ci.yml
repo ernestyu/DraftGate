@@ -4,23 +4,7 @@ on:
   push:
     branches:
       - '**'
-    paths:
-      - 'articles/**/index.md'
-      - '.writing-state/write-commentary/**'
-      - 'docs/writing/**'
-      - 'scripts/**'
-      - 'tests/test_writing*.py'
-      - 'writing'
-      - '.github/workflows/writing-workflow-ci.yml'
   pull_request:
-    paths:
-      - 'articles/**/index.md'
-      - '.writing-state/write-commentary/**'
-      - 'docs/writing/**'
-      - 'scripts/**'
-      - 'tests/test_writing*.py'
-      - 'writing'
-      - '.github/workflows/writing-workflow-ci.yml'
   workflow_dispatch:
 
 permissions:
