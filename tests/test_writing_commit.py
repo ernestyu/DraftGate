@@ -328,8 +328,10 @@ class WritingCommitTests(unittest.TestCase):
         self.assertEqual(self.blob(human_commit, self.article_path), self.blob(start_commit, self.article_path))
 
     def test_reconcile_commit_requires_confirmation_trailer(self):
+        self.modify_article("external edit before reconcile")
+        external = self.commit("external article edit")
         state = self.read_state()
-        state["article_revision"] = self.blob("HEAD", self.article_path)
+        state["article_revision"] = self.blob(external, self.article_path)
         self.write_state(state)
         commit = self.commit(self.msg("reconcile", article=self.article_id))
         failures = VC.validate_commit(self.root, commit)
