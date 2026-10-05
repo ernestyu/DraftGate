@@ -96,6 +96,8 @@ If the article is a seed, outline, section skeleton, placeholder-heavy draft, or
 
 If the article is already substantively complete, G3 MUST preserve existing prose where possible and only make changes required to align the article with the frozen architecture.
 
+Existing prose that already performs its declared section responsibility SHOULD be preserved. G3 MUST make only the minimum changes necessary to satisfy the current architecture and Draft Construction Check.
+
 ### 5.2 Draft Construction objective
 
 G3B MUST ensure:
@@ -133,12 +135,27 @@ G3B MUST NOT:
 - expand beyond G2 scope;
 - invent facts, data, quotations, sources, or evidence;
 - treat unsupported factual claims as true;
-- perform G4 accessibility cleanup as a substitute for G3 drafting;
-- perform G5 claim-strength pressure testing as a substitute for G3 drafting;
-- perform G6 paragraph restructuring as a substitute for G3 drafting;
-- perform G7 final language cleanup as a substitute for G3 drafting;
 - expand text merely to increase length;
 - rewrite a substantively complete draft from scratch without necessity.
+
+G3 may write explanations, paragraphs, transitions, and normal prose when those are necessary to construct a complete first draft.
+
+However:
+
+```text
+draft construction necessity
+!=
+downstream Gate responsibility
+```
+
+G3 MUST NOT perform the following as independent objectives during Draft Construction:
+
+- G4 accessibility audit;
+- G5 adversarial / evidence pressure test;
+- G6 paragraph audit or paragraph restructuring;
+- G7 language / pattern / AI-trace cleanup.
+
+If such downstream issues are visible during G3, G3 may leave them for the responsible Gate unless fixing them is strictly necessary to produce coherent substantive draft prose within G3 authority.
 
 ### 5.5 G3 exit contract
 
@@ -201,11 +218,24 @@ The implementation MAY choose an equivalent per-Gate storage path if needed, but
 
 ### 6.3 Loading
 
-When executing Gate Gx, the Agent MUST load:
+When executing Gate Gx, the only writing rules allowed to participate are:
 
-`Gx Core contract + declared Core resources + Custom Rules for Gx, if present`
+```text
+Gx Core contract
++ Gx declared Core resources
++ Gx Custom Rules, if present
+```
 
-Custom Rules for unrelated Gates MUST NOT be loaded by default.
+Custom Rules from any other Gate MUST NOT participate in:
+
+- execution;
+- editing;
+- evaluation;
+- PASS / FAIL decision.
+
+There is no execution-time exception to this per-Gate isolation.
+
+If the user explicitly asks to view, add, modify, or remove a Custom Rule belonging to another Gate, the Agent MAY read that other Gate's Custom Rule file for rule maintenance only. Reading it for maintenance MUST NOT make that rule part of the current Gate's execution, editing, evaluation, or PASS decision.
 
 ### 6.4 Precedence
 
@@ -225,7 +255,17 @@ Custom Rules MUST NOT:
 - weaken transition validation;
 - override explicit Forbidden sections of Core Gate contracts.
 
-If a Custom Rule conflicts with Core, Core wins and the conflict must not silently alter Core behavior.
+If a Custom Rule conflicts with Core, the result is frozen as:
+
+```text
+Custom Rule conflicts with Core
+→ Core applies
+→ conflicting Custom Rule is ignored for this execution
+→ user is explicitly informed of the conflict
+→ workflow state is not modified merely because of the conflict
+```
+
+A conflict MUST NOT silently alter Core behavior.
 
 ### 6.5 Custom Rule examples
 
@@ -338,10 +378,14 @@ Tests MUST assert that G3 documentation includes:
 Tests MUST assert:
 
 - per-Gate Custom Rules are optional;
-- only current-Gate Custom Rules are loaded;
+- only current-Gate Custom Rules participate in execution;
+- unrelated-Gate Custom Rules do not participate in editing, evaluation, or PASS decision;
+- another Gate's Custom Rule may be read for explicit rule maintenance only and remains excluded from current-Gate execution;
 - missing custom file is valid;
 - Core resources remain authoritative;
-- Custom Rules cannot override Core Forbidden semantics.
+- Custom Rules cannot override Core Forbidden semantics;
+- conflicting Custom Rules are ignored for that execution;
+- conflict reporting does not modify workflow state.
 
 The implementation MAY enforce this through deterministic routing/validation, documented Agent contract, or both, but behavior MUST be test-covered.
 
@@ -366,9 +410,26 @@ Acceptance expectation:
 - G3 must recognize that the current article is structurally complete but still too thin as a tutorial;
 - G3 must expand the major tutorial sections into substantive first-draft prose;
 - G3 must preserve G1 thesis and G2 scope;
+- G3 must preserve already-sufficient prose where possible and make only necessary architecture/draft-construction changes;
 - G4–G7 must remain responsible for their existing downstream checks;
 - the resulting cycle must complete through G7 with CI PASS;
 - the final article should function as an actual tutorial, not only as an outline.
+
+### 10.1 Custom Rules end-to-end acceptance
+
+Implementation MUST also pass one minimal real workflow case:
+
+```text
+user adds one G3 Custom Rule through conversation
+→ Agent persists it to G3 Custom Rules
+→ G3 execution loads and applies it
+→ G4 execution does not load or apply it
+→ a conflicting Custom Rule cannot override G3 Core
+→ conflict is reported to the user
+→ workflow state is not changed merely because of that conflict
+```
+
+This acceptance case is required in addition to unit/contract tests.
 
 ## 11. Public-rule neutrality requirement
 
