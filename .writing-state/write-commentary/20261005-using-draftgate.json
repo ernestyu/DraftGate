@@ -3,19 +3,14 @@
   "workflow": "write-commentary",
   "article_id": "20261005-using-draftgate",
   "article_path": "articles/20261005-using-draftgate/index.md",
-  "cycle": 1,
-  "entry_gate": "G1",
-  "skipped_by_user": [],
-  "current_gate": null,
-  "completed": [
+  "cycle": 2,
+  "entry_gate": "G3",
+  "skipped_by_user": [
     "G1",
-    "G2",
-    "G3",
-    "G4",
-    "G5",
-    "G6",
-    "G7"
+    "G2"
   ],
-  "status": "complete",
+  "current_gate": "G3",
+  "completed": [],
+  "status": "in_progress",
   "article_revision": "5564f1226503b3fb6f25c53978fdc4853fd4ba3f"
 }
