@@ -2,11 +2,19 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
+[![Writing Workflow CI](https://github.com/ernestyu/DraftGate/actions/workflows/writing-workflow-ci.yml/badge.svg)](https://github.com/ernestyu/DraftGate/actions/workflows/writing-workflow-ci.yml)
+
 A Git-native, staged editorial workflow for AI-assisted long-form writing.
 
 DraftGate turns one Markdown article into a stateful G1→G7 process. The language model handles judgment and editing; Git records document revisions; deterministic validators enforce gate order, freshness, and legal state transitions.
 
 The built-in editorial rules are intentionally language-neutral. They focus on reasoning, structure, evidence, paragraph responsibility, and mechanical repetition rather than a particular author's voice. The same workflow can be used for Chinese or English writing.
+
+## Design principles
+
+- **One invocation, one gate.** Each editing pass has one narrow responsibility and must stop before the next gate.
+- **Human-in-the-loop by design.** The workflow keeps discussion, judgment, and user decisions inside the process instead of treating writing as one-shot generation.
+- **Deterministic validation outside the model.** Git state and validators check ordering, freshness, and legal transitions instead of trusting the agent to declare its own success.
 
 ## Why
 

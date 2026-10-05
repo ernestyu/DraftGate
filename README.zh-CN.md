@@ -2,11 +2,19 @@
 
 [English](README.md) | **简体中文**
 
+[![Writing Workflow CI](https://github.com/ernestyu/DraftGate/actions/workflows/writing-workflow-ci.yml/badge.svg)](https://github.com/ernestyu/DraftGate/actions/workflows/writing-workflow-ci.yml)
+
 一个基于 Git、按阶段执行的 AI 辅助长文编辑工作流。
 
 DraftGate 把一篇 Markdown 文章变成一个有状态的 G1→G7 写作过程。语言模型负责判断与编辑，Git 记录文档版本，确定性的验证器负责检查 Gate 顺序、状态新鲜度和状态转移是否合法。
 
 内置写作规则刻意保持语言中立。它关注论证、结构、证据边界、段落职责和机械化写作模式，而不是某一种作者风格。因此，同一套流程可以直接用于中文或英文写作。
+
+## 设计原则
+
+- **一次只执行一个 Gate。** 每一轮编辑只承担一种明确职责，完成后必须停止，不能顺手执行后面的 Gate。
+- **人始终在流程中。** 讨论、判断和取舍属于正式流程的一部分，DraftGate 不把长文写作当成一次性生成任务。
+- **把确定性验证移出模型。** Gate 顺序、状态新鲜度和合法状态转移由 Git 与验证器检查，而不是由 Agent 自己宣布“已经完成”。
 
 ## 为什么需要 DraftGate
 
