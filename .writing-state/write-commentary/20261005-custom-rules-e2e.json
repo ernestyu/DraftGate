@@ -9,8 +9,10 @@
     "G1",
     "G2"
   ],
-  "current_gate": "G3",
-  "completed": [],
+  "current_gate": "G4",
+  "completed": [
+    "G3"
+  ],
   "status": "in_progress",
-  "article_revision": "2328953a024469dc263868e810ab44e52ca6f9be"
+  "article_revision": "8a54fb856ccbe8740f6aa26e0f5fe011b5269633"
 }
