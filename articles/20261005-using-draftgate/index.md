@@ -6,6 +6,58 @@
 
 核心判断是：好文章仍然需要 human-in-the-loop。AI 可以参与讨论、提出思路、寻找反例、核查事实和证据，也可以帮助组织结构和修改表达，但文章的关键判断仍然需要人持续参与。DraftGate 做的事情，是把这些不同性质的写作职责拆成 G1–G7 七个阶段，每次只处理一种问题，并用 Git state 和 CI 把执行顺序、当前状态和合法状态转移放到模型之外验证。
 
-本文是一篇 DraftGate 的实际使用教程，而不是一篇抽象的 AI 写作方法论文章。进入 G1 之前的开放讨论也属于真实使用过程：先通过 brainstorm 让主题、动机和大致方向成形，再进入受状态控制的 G1–G7。后文会以这篇文章本身作为案例，实际走完这套流程。
+本文是一篇 DraftGate 的实际使用教程，而不是一篇抽象的 AI 写作方法论文章。进入 G1 之前的开放讨论也属于真实使用过程：先通过 brainstorm 让主题、动机和大致方向成形，再进入受状态控制的 G1–G7。后文会以这篇文章本身作为贯穿案例，实际走完这套流程。
 
 本文的主线限定为“怎样实际使用 DraftGate”。教程必须交代三个部分：第一，使用前的准备，包括注册 GitHub、fork DraftGate 仓库，并把仓库交给能够读取和修改 GitHub 的 ChatGPT 或其他 Agent；第二，在正式进入 state-controlled workflow 之前，先做不受 state 约束的 Pre-G1 brainstorm，让主题、动机和大致方向成形；第三，从 G1 到 G7 逐步执行，每到一个 Gate 都先说明这一阶段解决什么问题，再停下来检查它实际修改了什么、state 如何变化、CI 是否通过，然后才进入下一步。前面对“一次性生成”和“复杂 writing skill 为什么仍会失败”的讨论只用于解释为什么需要这套流程，不扩展成独立的方法论主线；更广的 Agent 架构、Prompt Engineering 理论、CMS 和发布系统也不属于本文范围。
+
+## 1. 为什么需要把写作拆成多个阶段
+
+这一部分只建立教程的起点：一次性生成和把大量规则塞进一个 writing skill，为什么仍然难以稳定控制复杂写作；human-in-the-loop 为什么仍然必要。它只负责解释后面的流程为什么存在，不扩展成独立的方法论讨论。
+
+## 2. 使用前准备
+
+这一部分完成实际使用入口：注册并登录 GitHub，fork DraftGate，把 fork 后的仓库交给能够读取和修改 GitHub 的 ChatGPT 或其他 Agent，并确认 GitHub Actions 可以运行。
+
+这一步建立后续流程所需要的仓库、版本和 CI 环境。
+
+## 3. Pre-G1：先把想法讨论清楚
+
+正式 state control 之前先进行开放 brainstorm。这里可以发散、换角度、推翻原来的设想，也不要求 PASS。目标只是让用户能够大致说明为什么想写这篇文章、想讨论什么、希望回答什么。
+
+本文自己的案例也从这里开始：最初只是“写一篇 DraftGate 教程”，经过讨论后才明确教程要从一次性生成的问题引入，并把 human-in-the-loop、G1–G7、state 和 CI 连成一条完整使用路径。
+
+## 4. 正式进入 DraftGate：G1–G7
+
+从 G1 开始进入受状态控制的 workflow。后面的每一个 Gate 都使用同一种讲解方式：先说明这一阶段解决什么问题，再执行这一 Gate，然后停下来检查文章修改、state 变化和 CI 结果。
+
+### G1 — Main Question & Thesis
+
+确定文章真正要回答的问题和核心判断。本文在 G1 冻结了“怎样用 DraftGate 把整篇生成变成逐步可控过程”这一主问题。
+
+### G2 — Scope & Branch Control
+
+确定哪些内容属于教程主线，哪些只能作为背景、机制说明或排除范围。本文在 G2 冻结了准备、Pre-G1、G1–G7 实操三部分，并把更广的 Prompt Engineering、Agent 架构和发布系统排除在外。
+
+### G3 — Argument Architecture
+
+决定文章如何推进，并建立统一的 Explanatory Spine。本文采用 question-driven 作为 primary driver，同时用这篇文章自己的写作过程作为贯穿 case。
+
+### G4 — Reader Accessibility
+
+检查读者是否能够理解重要概念、机制和局部类比，不用额外背景知识也能跟上文章。
+
+### G5 — Claim & Evidence Boundary
+
+检查关键判断是否写得过强、证据是否足够、是否存在合理的替代解释或反例。
+
+### G6 — Paragraph Organization
+
+按语义和论证职责整理段落，避免把一个论证动作切碎，也避免把几个不同职责硬塞进同一段。
+
+### G7 — Final Language & Pattern Audit
+
+在前面各层已经冻结后做最终语言清理，检查重复、机械 signposting、固定节奏和其他模板化写作模式，不再重做前面的结构判断。
+
+## 5. 回看：DraftGate 实际控制了什么
+
+最后回看完整流程：人的判断从 Pre-G1 开始进入写作，G1–G7 把不同职责分开，Git state 记录当前阶段，CI 检查执行顺序和状态转移。教程到这里再回答开头的问题：DraftGate 的价值不在于让 AI 自动写完一篇文章，而在于让人能够持续控制 AI 辅助写作的过程。
