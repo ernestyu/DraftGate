@@ -96,7 +96,7 @@ class WritingLifecycleTests(unittest.TestCase):
         self.git("commit", "-m", "advance main")
         self.git("switch", branch)
         terminal = self.complete_g7(custom_rule=True)
-        out = WL.closeout(self.article_id, terminal, [], self.root)
+        out = WL.closeout(self.article_id, terminal, self.root)
         self.assertEqual(self.git("branch", "--show-current"), "main")
         self.assertIn("unrelated.txt", self.git("ls-tree", "-r", "--name-only", "main"))
         self.assertIn(f"articles/{self.article_id}/index.md", self.git("ls-tree", "-r", "--name-only", "main"))
@@ -117,7 +117,7 @@ class WritingLifecycleTests(unittest.TestCase):
         self.git("switch", branch)
         terminal = self.complete_g7()
         with self.assertRaisesRegex(WL.LifecycleError, "closeout conflict"):
-            WL.closeout(self.article_id, terminal, [], self.root)
+            WL.closeout(self.article_id, terminal, self.root)
         self.assertTrue(WL.ref_exists(self.root, f"refs/heads/{branch}"))
         self.assertEqual(self.git("branch", "--show-current"), branch)
 
@@ -132,19 +132,19 @@ class WritingLifecycleTests(unittest.TestCase):
         self.write(".writing-rules/G7.md", "branch rule\n")
         terminal = self.complete_g7(custom_rule=False)
         with self.assertRaisesRegex(WL.LifecycleError, "closeout conflict"):
-            WL.closeout(self.article_id, terminal, [], self.root)
+            WL.closeout(self.article_id, terminal, self.root)
         self.assertTrue(WL.ref_exists(self.root, f"refs/heads/{branch}"))
 
     def test_closeout_requires_exact_terminal_ci_attestation(self):
         self.begin_g7()
         terminal = self.complete_g7()
         with self.assertRaisesRegex(WL.LifecycleError, "ci-passed-for"):
-            WL.closeout(self.article_id, "0" * 40, [], self.root)
+            WL.closeout(self.article_id, "0" * 40, self.root)
 
     def test_archive_is_cycle_aware_and_new_cycle_reads_without_mutation(self):
         self.begin_g7()
         terminal = self.complete_g7()
-        WL.closeout(self.article_id, terminal, [], self.root)
+        WL.closeout(self.article_id, terminal, self.root)
         archive = self.root / WL.archive_rel(self.article_id, 1)
         before = archive.read_bytes()
         result = WL.begin(self.article_id, "G3", None, self.root)
@@ -160,7 +160,7 @@ class WritingLifecycleTests(unittest.TestCase):
     def test_archive_validation_detects_content_mismatch(self):
         self.begin_g7()
         terminal = self.complete_g7()
-        WL.closeout(self.article_id, terminal, [], self.root)
+        WL.closeout(self.article_id, terminal, self.root)
         archive = self.root / WL.archive_rel(self.article_id, 1)
         data = json.loads(archive.read_text(encoding="utf-8"))
         data["entry_gate"] = "G6"
@@ -171,7 +171,7 @@ class WritingLifecycleTests(unittest.TestCase):
     def test_archive_is_not_freshness_checked_against_later_article(self):
         self.begin_g7()
         terminal = self.complete_g7()
-        WL.closeout(self.article_id, terminal, [], self.root)
+        WL.closeout(self.article_id, terminal, self.root)
         self.write(f"articles/{self.article_id}/index.md", "# Later human edit\n")
         self.git("add", ".")
         self.git("commit", "-m", "later edit")
@@ -180,7 +180,7 @@ class WritingLifecycleTests(unittest.TestCase):
     def test_archived_state_is_not_active(self):
         self.begin_g7()
         terminal = self.complete_g7()
-        WL.closeout(self.article_id, terminal, [], self.root)
+        WL.closeout(self.article_id, terminal, self.root)
         with self.assertRaisesRegex(WS.StateError, "state not found"):
             WS.read_state(self.article_id, self.root)
 
@@ -191,21 +191,21 @@ class WritingLifecycleTests(unittest.TestCase):
         self.git("commit", "-m", "unauthorized")
         terminal = self.complete_g7()
         with self.assertRaisesRegex(WL.LifecycleError, "unauthorized durable"):
-            WL.closeout(self.article_id, terminal, [], self.root)
+            WL.closeout(self.article_id, terminal, self.root)
 
 
     def test_closeout_commit_and_evidence_history_validate(self):
         result = self.begin_g7()
         init_commit = self.git("rev-parse", "HEAD")
         terminal = self.complete_g7()
-        out = WL.closeout(self.article_id, terminal, [], self.root)
+        out = WL.closeout(self.article_id, terminal, self.root)
         self.assertEqual(VC.validate_commit(self.root, out["main_commit"]), [])
         self.git("merge-base", "--is-ancestor", init_commit, f"refs/tags/{out['evidence']}^{{}}")
 
     def test_archive_based_start_cycle_commit_validates_and_keeps_c1(self):
         self.begin_g7()
         terminal = self.complete_g7()
-        first = WL.closeout(self.article_id, terminal, [], self.root)
+        first = WL.closeout(self.article_id, terminal, self.root)
         c1_archive = self.root / WL.archive_rel(self.article_id, 1)
         c1_bytes = c1_archive.read_bytes()
         c1_tag = self.git("rev-parse", f"refs/tags/{first['evidence']}^{{}}")
@@ -214,7 +214,7 @@ class WritingLifecycleTests(unittest.TestCase):
         start_commit = self.git("rev-parse", "HEAD")
         self.assertEqual(VC.validate_commit(self.root, start_commit), [])
         terminal2 = self.complete_g7()
-        WL.closeout(self.article_id, terminal2, [], self.root)
+        WL.closeout(self.article_id, terminal2, self.root)
 
         self.assertTrue(c1_archive.is_file())
         self.assertTrue((self.root / WL.archive_rel(self.article_id, 2)).is_file())

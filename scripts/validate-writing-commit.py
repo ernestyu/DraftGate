@@ -18,7 +18,7 @@ VW = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = VW
 SPEC.loader.exec_module(VW)
 
-TRAILER_KEYS = {"Writing-Workflow", "Writing-Article", "Writing-Gate", "Writing-Cycle", "Writing-Recovery", "Writing-Maintenance"}
+TRAILER_KEYS = {"Writing-Workflow", "Writing-Article", "Writing-Gate", "Writing-Cycle", "Writing-Recovery", "Writing-Maintenance", "Writing-Main-Base"}
 WORKFLOW_OPS = {"init", "gate", "reconcile", "start-cycle", "reopen", "closeout", "maintenance"}
 TRAILER_RE = re.compile(r"^(Writing-[A-Za-z-]+):\s*(.*?)\s*$")
 
@@ -56,6 +56,7 @@ def parse_writing_trailers(message: str) -> tuple[dict[str, str], list[str]]:
     cycle = trailers.get("Writing-Cycle")
     recovery = trailers.get("Writing-Recovery")
     maintenance = trailers.get("Writing-Maintenance")
+    main_base = trailers.get("Writing-Main-Base")
 
     if operation is None:
         if article is not None or gate is not None:
@@ -97,6 +98,12 @@ def parse_writing_trailers(message: str) -> tuple[dict[str, str], list[str]]:
             failures.append("maintenance requires supported Writing-Maintenance category")
     elif maintenance is not None:
         failures.append("Writing-Maintenance is allowed only for maintenance")
+
+    if main_base is not None:
+        if operation not in {"init", "start-cycle"}:
+            failures.append("Writing-Main-Base is allowed only for init/start-cycle")
+        elif not VW.BLOB_SHA_RE.fullmatch(main_base):
+            failures.append("Writing-Main-Base must be a 40-character lowercase Git commit SHA")
 
     return trailers, failures
 

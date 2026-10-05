@@ -19,7 +19,7 @@ Do not introduce Hugo, CMS, site-generation, cover-image, or publishing behavior
 
 ## Lifecycle authority
 
-Normal article work should run on `writing/<article-id>/c<cycle>`, not directly on `main`.
+Normal article work should run on `writing/<article-id>/c<cycle>`, not directly on `main`. Do not rebase the writing branch or merge `main` into it during the cycle; closeout uses the recorded `Writing-Main-Base` to compare the cycle against current `main`.
 
 For a new or archived article cycle, prefer `./writing begin ...`. After G7, verify CI PASS for the exact terminal G7 commit before running `./writing closeout --article-id <id> --ci-passed-for <G7_SHA>`.
 
@@ -27,6 +27,6 @@ Closeout is fail-closed. Do not delete a writing branch before evidence ref, mai
 
 Evidence refs are write-once by policy: an existing same-target ref is accepted; a different-target ref must stop the operation.
 
-Do not auto-run `reconcile`. Report STATE STALE, explain that reconcile accepts external edits without validating Gate authority, and require explicit user confirmation.
+Do not auto-run `reconcile`. Report STATE STALE, explain that reconcile accepts external edits without validating Gate authority, and require explicit user confirmation. A reconcile recovery commit must include `Writing-Workflow: reconcile`, `Writing-Article: <id>`, and `Writing-Recovery: confirmed`.
 
 Repository maintenance must not modify an in-progress bound article or active state except through a lifecycle operation explicitly authorized by the workflow.

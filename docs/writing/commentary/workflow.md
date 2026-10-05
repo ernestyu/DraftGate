@@ -230,7 +230,7 @@ This project edits Markdown only. It does not publish, build a website, generate
 
 ## Repository lifecycle
 
-Normal cycles run on `writing/<article-id>/c<cycle>`. Gate commits remain intact on that branch.
+Normal cycles run on `writing/<article-id>/c<cycle>`. Gate commits remain intact on that branch. The lifecycle begin commit records the exact starting `main` commit as `Writing-Main-Base`; the writing branch must not be rebased or merged with `main` during the cycle.
 
 After G7 and CI PASS, closeout:
 

@@ -88,6 +88,10 @@ def begin(article_id: str, entry_gate: str, title: str | None, root: Path) -> di
     ensure_clean(root)
     if current_branch(root) != "main":
         raise LifecycleError("begin must start from main")
+    archive_failures = VW.validate_archives(root, VW.load_registry(root))
+    if archive_failures:
+        raise LifecycleError("; ".join(archive_failures))
+    main_base = git(root, "rev-parse", "main")
     if (root / active_rel(article_id)).exists():
         raise LifecycleError("active state already exists")
     previous_cycle = latest_cycle(root, article_id)
@@ -111,8 +115,8 @@ def begin(article_id: str, entry_gate: str, title: str | None, root: Path) -> di
         state = WS.start_cycle(article_id, root, entry_gate)
         op = "start-cycle"
     git(root, "add", active_rel(article_id))
-    git(root, "commit", "-m", f"Begin writing cycle {cycle}\n\nWriting-Workflow: {op}\nWriting-Article: {article_id}")
-    return {"branch": name, "cycle": cycle, "main_base_commit": git(root, "merge-base", "main", "HEAD"), "state": state}
+    git(root, "commit", "-m", f"Begin writing cycle {cycle}\n\nWriting-Workflow: {op}\nWriting-Article: {article_id}\nWriting-Main-Base: {main_base}")
+    return {"branch": name, "cycle": cycle, "main_base_commit": main_base, "state": state}
 
 def ensure_evidence(root: Path, article_id: str, cycle: int, target: str) -> str:
     tag = evidence_name(article_id, cycle)
@@ -131,13 +135,12 @@ def changed_since(root: Path, base: str, tip: str) -> set[str]:
     out = git(root, "diff", "--name-only", base, tip)
     return {x for x in out.splitlines() if x}
 
-def durable_paths(root: Path, article_id: str, base: str, tip: str, extras: list[str]) -> set[str]:
+def durable_paths(root: Path, article_id: str, base: str, tip: str) -> set[str]:
     allowed = {article_rel(article_id)}
     changed = changed_since(root, base, tip)
     for path in changed:
         if path.startswith(".writing-rules/") and path.endswith(".md"):
             allowed.add(path)
-    allowed.update(extras)
     ignored = {active_rel(article_id)}
     unexpected = changed - allowed - ignored
     if unexpected:
@@ -193,7 +196,23 @@ def verify_archive(root: Path, main_commit: str, evidence_target: str, article_i
     if archived.get("article_revision") != blob_or_none(root, evidence_target, archived["article_path"]):
         raise LifecycleError("archive article_revision mismatch")
 
-def closeout(article_id: str, ci_passed_for: str, extras: list[str], root: Path) -> dict:
+def recorded_main_base(root: Path, article_id: str, terminal: str) -> str:
+    log = git(root, "log", terminal, "--format=%H%x00%B%x00")
+    chunks = log.split("\x00")
+    for i in range(0, len(chunks) - 1, 2):
+        message = chunks[i + 1]
+        if f"Writing-Article: {article_id}" not in message:
+            continue
+        for line in message.splitlines():
+            if line.startswith("Writing-Main-Base: "):
+                value = line.split(": ", 1)[1].strip()
+                if VW.BLOB_SHA_RE.fullmatch(value):
+                    return value
+                raise LifecycleError("invalid recorded main base")
+    raise LifecycleError("writing cycle is missing recorded main base")
+
+
+def closeout(article_id: str, ci_passed_for: str, root: Path) -> dict:
     ensure_clean(root)
     state = WS.read_state(article_id, root)
     if state.get("status") != "complete":
@@ -208,13 +227,27 @@ def closeout(article_id: str, ci_passed_for: str, extras: list[str], root: Path)
     if not g7_terminal(root, terminal, article_id):
         raise LifecycleError("terminal commit must be G7 completion")
 
-    base = git(root, "merge-base", "main", terminal)
+    base = recorded_main_base(root, article_id, terminal)
+    if git(root, "merge-base", base, terminal) != base:
+        raise LifecycleError("recorded main base is not an ancestor of terminal commit")
     current_main = git(root, "rev-parse", "main")
-    paths = durable_paths(root, article_id, base, terminal, extras)
+    paths = durable_paths(root, article_id, base, terminal)
     detect_conflicts(root, base, current_main, terminal, paths)
+
+    base_active = blob_or_none(root, base, active_rel(article_id))
+    main_active = blob_or_none(root, current_main, active_rel(article_id))
+    if main_active != base_active:
+        raise LifecycleError("closeout conflict: active state changed on main")
+
+    expected_archive = text_at(root, terminal, active_rel(article_id))
+    existing_archive = blob_or_none(root, current_main, archive_rel(article_id, cycle))
+    if existing_archive is not None:
+        expected_blob = subprocess.check_output(["git", "hash-object", "-w", "--stdin"], cwd=root, input=expected_archive, text=True).strip()
+        if existing_archive != expected_blob:
+            raise LifecycleError("historical archive already exists with different content")
     tag = ensure_evidence(root, article_id, cycle, terminal)
 
-    historical_state = text_at(root, terminal, active_rel(article_id))
+    historical_state = expected_archive
     tree = build_closeout_tree(root, current_main, terminal, article_id, cycle, paths, historical_state)
     current_tree = git(root, "rev-parse", f"{current_main}^{{tree}}")
     if tree == current_tree:
@@ -245,12 +278,11 @@ def main() -> int:
     p = sub.add_parser("closeout")
     p.add_argument("--article-id", required=True)
     p.add_argument("--ci-passed-for", required=True)
-    p.add_argument("--durable-path", action="append", default=[])
 
     args = parser.parse_args()
     root = Path(args.root).resolve()
     try:
-        result = begin(args.article_id, args.entry_gate, args.title, root) if args.command == "begin" else closeout(args.article_id, args.ci_passed_for, args.durable_path, root)
+        result = begin(args.article_id, args.entry_gate, args.title, root) if args.command == "begin" else closeout(args.article_id, args.ci_passed_for, root)
     except (LifecycleError, WS.StateError, json.JSONDecodeError) as exc:
         print("WRITING_LIFECYCLE_FAIL", exc)
         return 1
