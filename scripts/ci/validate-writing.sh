@@ -23,18 +23,34 @@ before="${WRITING_CI_BEFORE:-}"
 after="${WRITING_CI_AFTER:-HEAD}"
 
 zero_sha="0000000000000000000000000000000000000000"
+history_window="${WRITING_CI_HISTORY_WINDOW:-8}"
 commits=()
+declare -A seen=()
 
+add_commit() {
+  local commit="$1"
+  [[ -z "$commit" ]] && return
+  if [[ -z "${seen[$commit]+x}" ]]; then
+    commits+=("$commit")
+    seen["$commit"]=1
+  fi
+}
+
+# Always re-validate a small recent history window. This makes CI self-healing:
+# if GitHub fails to create a run for one or more pushes, a later push will
+# automatically validate those missed commits without user intervention.
+while IFS= read -r commit; do
+  add_commit "$commit"
+done < <(git rev-list --reverse --max-count="$history_window" "$after")
+
+# Also validate every commit introduced by the current push, even when a push
+# contains more commits than the self-healing history window.
 if [[ -n "$before" && "$before" != "$zero_sha" ]] && git cat-file -e "$before^{commit}" 2>/dev/null; then
-  # Re-validate the previous branch HEAD as a self-healing guard.
-  # If a prior push did not create an Actions run, the next push will
-  # automatically validate that missed commit before validating new commits.
-  commits+=("$before")
   while IFS= read -r commit; do
-    [[ -n "$commit" ]] && commits+=("$commit")
+    add_commit "$commit"
   done < <(git rev-list --reverse "$before..$after")
 else
-  commits+=("$after")
+  add_commit "$after"
 fi
 
 if [[ "${#commits[@]}" -eq 0 ]]; then
