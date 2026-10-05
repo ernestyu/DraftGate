@@ -106,13 +106,17 @@ Every new article cycle MUST run on exactly one temporary writing branch:
 
 `writing/<article-id>/c<cycle>`
 
+At branch creation time, the lifecycle MUST record or deterministically identify the exact `main` commit from which the writing branch was created. This is the cycle's `main_base_commit` for closeout safety.
+
+The base identity MUST NOT require a new schema-v4 field. It MAY be derived from Git ancestry / merge-base or stored in lifecycle-specific metadata outside the writing state schema.
+
 For a new article:
 
-`main → create writing branch → bootstrap/article commit → init active state → execute Gates`
+`main → record main base → create writing branch → bootstrap/article commit → init active state → execute Gates`
 
 For a later cycle:
 
-`main → create writing branch → create new active state from latest archived completed state → execute from selected entry Gate`
+`main → record main base → create writing branch → create new active state from latest archived completed state → execute from selected entry Gate`
 
 ### 5.2 Gate execution
 
@@ -177,6 +181,61 @@ Archive MUST NOT mutate schema v4.
 
 Main closeout MUST be a squash-style lifecycle operation, not a raw `git merge --squash` of the writing branch HEAD.
 
+### 7.1 Current-main closeout safety
+
+Closeout MUST be based on the current `main` HEAD at closeout time, not by directly constructing a result from the stale branch-creation base.
+
+The lifecycle MUST identify:
+
+```text
+main_base_commit
+writing_branch_final_commit
+current_main_commit
+```
+
+If `current_main_commit == main_base_commit`, normal closeout construction may proceed.
+
+If `main` advanced after the writing branch was created, closeout MUST compare:
+
+```text
+changes introduced by current main since main_base_commit
+vs
+this cycle's authorized durable changes since main_base_commit
+```
+
+Authorized durable cycle changes are limited to the objects defined by this SPEC for closeout, including:
+
+- final article;
+- durable Persistent Custom Rules changes;
+- archived completed state;
+- other explicitly authorized durable repository changes.
+
+Closeout MUST NOT replace current main with the writing-branch tree.
+
+Instead, it MUST construct the closeout tree by applying only the cycle's authorized durable changes onto the current main tree.
+
+If current-main changes and cycle durable changes are non-conflicting:
+
+```text
+current main
++ authorized durable cycle delta
+→ closeout tree
+```
+
+If both sides changed the same durable object or otherwise create an unresolved semantic/path conflict:
+
+```text
+STOP
+→ do not overwrite current main
+→ do not auto-resolve
+→ preserve writing branch
+→ preserve any already-created evidence ref
+```
+
+Custom Rules MUST receive the same conflict treatment. A cycle MUST NOT silently overwrite newer Custom Rules that landed on main after the writing branch base.
+
+No automatic force-update, last-writer-wins behavior, or stale-base tree replacement is permitted.
+
 The final tree of the single main closeout commit MUST contain at least:
 
 1. the final article content from the completed writing cycle;
@@ -233,7 +292,9 @@ the implementation MUST apply:
 
 Evidence creation MUST happen before writing-branch deletion.
 
-The evidence ref target MUST be the final Gate completion commit of that cycle, normally G7.
+The evidence ref target MUST be the cycle's G7 completion commit.
+
+No alternate terminal target is permitted for a normal completed DraftGate cycle.
 
 Because prior Gate commits are ancestors of the final Gate commit, deleting the writing branch MUST still leave the complete Gate commit chain reachable through the evidence ref.
 
@@ -344,9 +405,47 @@ Archived states:
 - schema validation;
 - must have `status = complete`;
 - must have cycle/path agreement;
-- must correspond to the expected evidence ref naming convention;
 - MUST NOT require freshness against the current main article blob;
 - MUST NOT become stale merely because later cycles changed the article.
+
+### 13.1 Archive ↔ evidence historical consistency
+
+Archive/evidence validation MUST be content-level, not naming-only.
+
+For archived state:
+
+`.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`
+
+the expected evidence ref is:
+
+`writing-evidence/<article-id>/c<cycle>`
+
+Validation MUST require all of the following:
+
+1. the expected evidence ref exists;
+2. the evidence ref points exactly to that cycle's G7 completion commit;
+3. the evidence target commit contains the completed active state for that cycle at:
+   `.writing-state/write-commentary/<article-id>.json`;
+4. the completed active state contained in the evidence target is content-equivalent to the archived JSON, except for representation/path relocation outside the JSON content itself;
+5. at minimum, the following fields MUST match exactly:
+   - `schema_version`;
+   - `workflow`;
+   - `article_id`;
+   - `article_path`;
+   - `cycle`;
+   - `entry_gate`;
+   - `skipped_by_user`;
+   - `current_gate`;
+   - `completed`;
+   - `status`;
+   - `article_revision`;
+6. archived `status` MUST equal `complete`;
+7. archived `current_gate` MUST be `null`;
+8. archived `article_revision` MUST equal the Git blob SHA of the final article at `article_path` in the evidence target commit.
+
+Any mismatch between archive content and evidence-target historical content MUST fail closed.
+
+The archive is therefore not considered valid merely because its path and evidence-ref name have matching article/cycle identifiers.
 
 CI MUST NOT scan archived states as resumable active states.
 
@@ -369,14 +468,17 @@ Implementation MUST define the required commit trailers or equivalent determinis
 
 Closeout ordering is frozen as:
 
-1. verify completed state and final Gate commit;
+1. verify completed state and confirm the cycle terminal commit is G7 completion;
 2. verify required CI PASS;
-3. create or idempotently verify evidence ref;
-4. construct exact durable main closeout tree;
-5. create one high-level main closeout commit;
-6. verify main tree contains final article, durable Custom Rules, archived cycle state, and no active state for that cycle;
-7. verify archive/evidence correspondence;
-8. delete writing branch.
+3. identify the recorded/derived writing-branch main base and current main HEAD;
+4. compute current-main changes since base and the cycle's authorized durable delta;
+5. detect any conflict between current main and the cycle durable delta; on conflict STOP;
+6. create or idempotently verify evidence ref pointing exactly to the G7 completion commit;
+7. construct the exact durable closeout tree on top of current main;
+8. create one high-level main closeout commit;
+9. verify main tree contains final article, durable Custom Rules, archived cycle state, and no active state for that cycle;
+10. verify archive/evidence historical consistency at content level;
+11. delete writing branch.
 
 Archive representation is part of the same main closeout tree, not a later maintenance commit.
 
@@ -433,38 +535,50 @@ Implementation MUST add tests covering at least:
 
 1. writing branch naming;
 2. one branch per article cycle;
-3. Gate commits remain intact on writing branch;
-4. evidence ref points to final Gate commit;
-5. evidence ref is write-once by policy;
-6. existing same-target evidence ref is idempotent;
-7. existing different-target evidence ref causes STOP;
-8. deleting writing branch leaves Gate history reachable through evidence ref;
-9. main closeout produces one high-level commit;
-10. main closeout final tree contains final article;
-11. main closeout final tree contains durable Custom Rules changes;
-12. main closeout final tree contains `.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`;
-13. main closeout final tree does not contain the completed cycle active state;
-14. archive is cycle-aware and does not overwrite earlier cycles;
-15. archived state maps one-to-one to evidence ref;
-16. archived state is not freshness-checked against later article versions;
-17. archived state cannot be advanced/reopened as active state;
-18. new cycle reads previous archive without mutating it;
-19. new active cycle uses current main article blob;
-20. reconcile cannot run automatically;
-21. reconcile requires explicit confirmation at Agent contract level;
-22. reconcile does not claim Gate-authority validation;
-23. maintenance cannot modify in-progress bound article;
-24. maintenance cannot modify active state except explicitly authorized lifecycle operation;
-25. branch cleanup occurs only after verified closeout;
-26. closeout failure preserves writing branch;
-27. retry/idempotency behavior;
-28. existing schema v4 tests;
-29. existing same-commit tests;
-30. existing freshness tests;
-31. existing NO_CHANGE tests;
-32. existing reopen tests;
-33. existing start-cycle/selectable-entry tests;
-34. existing Custom Rules isolation tests.
+3. writing branch creation records or deterministically identifies exact main base commit;
+4. Gate commits remain intact on writing branch;
+5. evidence ref points exactly to the cycle's G7 completion commit;
+6. evidence ref is write-once by policy;
+7. existing same-target evidence ref is idempotent;
+8. existing different-target evidence ref causes STOP;
+9. deleting writing branch leaves Gate history reachable through evidence ref;
+10. closeout uses current main HEAD, not stale main base tree;
+11. non-conflicting current-main changes are preserved;
+12. cycle durable changes are applied onto current main;
+13. conflicting current-main/article changes cause STOP;
+14. conflicting current-main/Custom-Rules changes cause STOP;
+15. closeout conflict preserves writing branch;
+16. closeout conflict preserves any already-created evidence ref;
+17. main closeout produces one high-level commit;
+18. main closeout final tree contains final article;
+19. main closeout final tree contains durable Custom Rules changes;
+20. main closeout final tree contains `.writing-state/archive/write-commentary/<article-id>/c<cycle>.json`;
+21. main closeout final tree does not contain the completed cycle active state;
+22. archive is cycle-aware and does not overwrite earlier cycles;
+23. archived state maps one-to-one to evidence ref;
+24. archived-state content matches the completed active state contained in the evidence target;
+25. archived `article_revision` equals the final article blob in the evidence target;
+26. archive/evidence content mismatch fails closed;
+27. evidence ref targeting anything other than cycle G7 completion fails closed;
+28. archived state is not freshness-checked against later article versions;
+29. archived state cannot be advanced/reopened as active state;
+30. new cycle reads previous archive without mutating it;
+31. new active cycle uses current main article blob;
+32. reconcile cannot run automatically;
+33. reconcile requires explicit confirmation at Agent contract level;
+34. reconcile does not claim Gate-authority validation;
+35. maintenance cannot modify in-progress bound article;
+36. maintenance cannot modify active state except explicitly authorized lifecycle operation;
+37. branch cleanup occurs only after verified closeout;
+38. closeout failure preserves writing branch;
+39. retry/idempotency behavior;
+40. existing schema v4 tests;
+41. existing same-commit tests;
+42. existing freshness tests;
+43. existing NO_CHANGE tests;
+44. existing reopen tests;
+45. existing start-cycle/selectable-entry tests;
+46. existing Custom Rules isolation tests.
 
 ## 20. Dogfood acceptance
 
@@ -484,10 +598,14 @@ After implementation audit PASS, run one real small article through:
 
 Acceptance MUST verify:
 
+- writing branch base commit is recorded or deterministically recoverable;
 - main history contains one high-level cycle closeout commit;
+- if main advanced during the cycle, unrelated/non-conflicting main changes are preserved;
 - no completed c1 active state remains;
 - archived c1 state exists;
-- evidence ref exists and points to final G7 commit;
+- evidence ref exists and points exactly to the c1 G7 completion commit;
+- archived c1 JSON matches the completed active state stored in that G7 evidence target;
+- archived c1 `article_revision` equals the final article blob in that G7 evidence target;
 - G1–G7 commits remain reachable;
 - final article exists on main;
 - durable Custom Rules changes exist on main;
