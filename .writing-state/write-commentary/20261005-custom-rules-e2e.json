@@ -1,0 +1,16 @@
+{
+  "schema_version": 4,
+  "workflow": "write-commentary",
+  "article_id": "20261005-custom-rules-e2e",
+  "article_path": "articles/20261005-custom-rules-e2e/index.md",
+  "cycle": 1,
+  "entry_gate": "G3",
+  "skipped_by_user": [
+    "G1",
+    "G2"
+  ],
+  "current_gate": "G3",
+  "completed": [],
+  "status": "in_progress",
+  "article_revision": "2328953a024469dc263868e810ab44e52ca6f9be"
+}
