@@ -8,7 +8,7 @@
 
 核心判断是：对于需要反复判断、修改和核查的复杂长文，human-in-the-loop 仍然很重要，也就是人在整个写作过程中持续参与关键判断，而不是把主题交给 AI 后等待最终成品。AI 可以参与讨论、提出思路、寻找反例、核查事实和证据，也可以帮助组织结构和修改表达，但文章的关键判断仍然需要人持续参与。DraftGate 做的事情，是把这些不同性质的写作职责拆成 G1–G7 七个阶段，每个 Gate 只处理一种问题。它再用 Git state 记录文章当前进行到哪一步，并用 CI 在每次提交后自动验证 Gate 顺序、state 是否匹配以及状态转移是否合法。
 
-本文重点是 DraftGate 的实际使用，而不是展开一套抽象的 AI 写作理论。下面会从最开始的准备讲起，并且用这篇文章自己的生成过程作为贯穿案例：我们怎样从一个很模糊的“写一篇 DraftGate 教程”开始，经过 Pre-G1、G1、G2、G3，一直到后面的检查与修订；中间遇到什么问题，state 怎样变化，什么时候应该 reopen，什么时候应该重新开一个 cycle。
+本文重点是 DraftGate 的实际使用，不展开一套抽象的 AI 写作理论。文章会从准备工作讲起，并用这篇教程自己的生成过程贯穿始终：从最初模糊的“写一篇 DraftGate 教程”，一直走到后面的检查、修订、reopen 和新 cycle。
 
 ## 1. 为什么需要把写作拆成多个阶段
 
@@ -79,7 +79,7 @@ Pre-G1 的目标不是得到一篇文章，而是让你自己逐渐弄清楚：�
 
 G1 解决的是最上层的问题：**这篇文章到底在回答什么，以及核心判断是什么。** 它不负责排目录，也不负责润色。如果主问题本身错了，后面的结构再完整，也只是把错误的问题写得更完整。
 
-这篇教程进入 G1 时，我们已经通过 Pre-G1 知道自己不只是想写一个“软件说明”。最后冻结的主问题是：“怎样用 DraftGate，把 AI 辅助写作从一次难以控制的整篇生成，变成一个人可以逐步讨论、判断、修改和验证的过程？”
+进入 G1 时，我们已经通过 Pre-G1 确认，这篇文章不只是一个“软件说明”。最后冻结的主问题是：“怎样用 DraftGate，把 AI 辅助写作从一次难以控制的整篇生成，变成一个人可以逐步讨论、判断、修改和验证的过程？”
 
 同时冻结的核心判断，也就是 thesis，是：对于需要反复判断、修改和核查的复杂长文，human-in-the-loop 仍然很重要；DraftGate 通过 G1–G7 把不同职责拆开，再用 Git state 和 CI 把执行顺序与验证放到模型之外。这里的 thesis 可以理解为文章准备给出的核心回答。
 
@@ -89,29 +89,29 @@ G1 完成后，state 会从 `current_gate = G1` 推进到 `current_gate = G2`，
 
 G2 控制的是文章边界，也就是 scope：哪些内容属于这篇文章，哪些内容即使相关，也应该留在外面。很多文章的问题不是没有内容，而是什么都想写。在这一 Gate，需要把材料分成几类：哪些属于主线，哪些只是 supporting branch，哪些虽然有意思，但不应该进入这篇文章。
 
-这篇教程在 G2 明确冻结了三块主线内容：使用前准备、Pre-G1 brainstorm、G1–G7 的真实执行过程。同时把更广的 Prompt Engineering、Agent 架构、CMS 和发布系统排除在外。这些内容并非不重要，只是如果全部加入，教程会从“怎样使用 DraftGate”滑向“AI 写作系统设计综述”。
+G2 最终冻结了三块主线内容：使用前准备、Pre-G1 brainstorm、G1–G7 的真实执行过程。同时把更广的 Prompt Engineering、Agent 架构、CMS 和发布系统排除在外。这些内容并非不重要，只是如果全部加入，教程会从“怎样使用 DraftGate”滑向“AI 写作系统设计综述”。
 
 G2 完成后，文章已经知道“要回答什么”和“哪些东西属于本文”，但还没有决定怎样讲，也可能还没有完整正文。
 
 ## 6. G3 — Argument Architecture + Draft Construction
 
-G3 是这套系统里非常关键的一步，而且也是我们第一次 dogfood 后修改最多的一步。
+G3 是这套系统里变化最大的一步，也是第一次 dogfood 后暴露问题最多的一步。
 
 第一部分是 Argument Architecture。Agent 会根据 G1 的主问题和 G2 的 scope，提出 1–3 个适合的 narrative mode，也就是整篇文章主要靠什么方式向前推进。例如 question-driven 表示围绕一个问题逐层深入，case-driven 表示跟随一个真实案例推进，hybrid 则允许两者组合，但必须有一个明确主线。这个选择不能由 Agent 自动决定，用户必须明确批准。
 
-这篇教程选择的是 question-driven 作为 primary driver，同时把这篇教程自己的生成过程作为 case-driven secondary device。也就是说，文章主要围绕“怎样把 AI 写作变成可控过程”这个问题推进，同时用真实 dogfood 过程不断落地。接着，G3 需要建立 Explanatory Spine。它不是目录，而是整篇文章真正的推理链：如果把标题、例子和修辞都拿掉，文章从起点怎样一步步推到最后判断。本文的 spine 可以压缩成：一次性生成把多种写作职责同时交给模型，因此难以稳定控制；human-in-the-loop 需要把人的判断拆成连续阶段；DraftGate 再用 state 和 CI 把这些阶段变成可执行、可验证的流程。
+这里选择 question-driven 作为 primary driver，同时把教程自身的生成过程作为 case-driven secondary device。也就是说，文章主要围绕“怎样把 AI 写作变成可控过程”这个问题推进，同时用真实 dogfood 过程不断落地。接着，G3 需要建立 Explanatory Spine。它不是目录，而是整篇文章真正的推理链：如果把标题、例子和修辞都拿掉，文章从起点怎样一步步推到最后判断。本文的 spine 可以压缩成：一次性生成把多种写作职责同时交给模型，因此难以稳定控制；human-in-the-loop 需要把人的判断拆成连续阶段；DraftGate 再用 state 和 CI 把这些阶段变成可执行、可验证的流程。
 
 第二部分是 Draft Construction。这个部分是在第一次 dogfood 后补进去的。第一次运行时，G3 虽然搭出了完整结构，但很多 section 只有一两句话，只能算 section skeleton，也就是“这一节应该做什么”已经知道了，但真正的正文还没有展开。随后 G4–G7 都严格按照自己的职责工作，最后所有 Gate 都 PASS，文章却仍然只是一个“结构正确的 outline”。这暴露出一个很实际的问题：没有任何 Gate 明确负责把 skeleton 展开成完整 first draft。
 
 现在 G3 明确承担这个责任。如果文章还是 seed、outline、section skeleton 或 placeholder-heavy draft，G3 不能 PASS。每个 major section 都必须有 substantive prose，也就是实际承担解释、论证或教程职责的完整正文，而不只是标题和提纲说明。
 
-这并不意味着 G3 要顺手完成所有后续工作。它可以写正文、解释和过渡，但不能把 G4 的可理解性 audit、G5 的证据压力测试、G6 的段落整理或 G7 的最终语言清理提前做掉。我们现在正在进行的第二轮 dogfood，就是从 G3 重新进入，专门验证这个改动。第一轮留下的结构被保留，但原来过薄的 sections 被展开成完整教程正文。
+这并不意味着 G3 要顺手完成所有后续工作。它可以写正文、解释和过渡，但不能把 G4 的可理解性 audit、G5 的证据压力测试、G6 的段落整理或 G7 的最终语言清理提前做掉。第二轮 dogfood 正是从 G3 重新进入，用来验证这个改动。第一轮留下的结构被保留，但原来过薄的 sections 被展开成完整教程正文。
 
 ## 7. G4 — Reader Accessibility
 
 G4 不再决定文章“讲什么”，而是检查读者能不能跟上。比如，文章里出现 fork、state、CI、Gate、human-in-the-loop 这些词时，技术用户可能觉得很自然，但普通读者未必知道它们分别是什么意思。G4 要检查的是这种理解门槛。
 
-在这篇教程的第一轮里，G4 就补过这些解释：fork 是把仓库复制到自己的 GitHub 账户；state 是记录当前 Gate、已完成 Gate 和文章 revision 的 JSON 文件；这里的 revision 指文章在 Git 中对应的版本标识；CI 是每次提交后自动执行的验证；Agent 指能够读写仓库并提交 Git 变更的 AI 工具。
+第一轮 G4 就补过这些解释：fork 是把仓库复制到自己的 GitHub 账户；state 是记录当前 Gate、已完成 Gate 和文章 revision 的 JSON 文件；这里的 revision 指文章在 Git 中对应的版本标识；CI 是每次提交后自动执行的验证；Agent 指能够读写仓库并提交 Git 变更的 AI 工具。
 
 G4 的判断标准不是“术语越少越好”，而是读者第一次遇到重要概念时，有没有足够的解释可以继续往下读。
 
@@ -119,7 +119,7 @@ G4 的判断标准不是“术语越少越好”，而是读者第一次遇到�
 
 G5 负责的是判断强度和证据边界。这里的 claim 可以理解为文章正在要求读者相信的判断。G5 会问：这些判断有没有写得太绝对？有没有合理的替代解释？最强反驳是什么？哪些话需要加条件？
 
-这篇教程第一轮就遇到过一个典型问题。原文一开始写的是“好文章仍然需要 human-in-the-loop”。这个判断太宽，因为简单、格式固定、低风险的写作任务，完全可能一次生成就够用。
+第一轮 G5 就遇到过一个典型问题。原文一开始写的是“好文章仍然需要 human-in-the-loop”。这个判断太宽，因为简单、格式固定、低风险的写作任务，完全可能一次生成就够用。
 
 G5 最后把它收紧成：“对于需要反复判断、修改和核查的复杂长文，human-in-the-loop 仍然很重要。”这种修改看起来只是加了几个限定词，但它改变的是 claim boundary，而不是语言风格。
 
@@ -127,7 +127,7 @@ G5 最后把它收紧成：“对于需要反复判断、修改和核查的复�
 
 G6 只看段落职责。它不规定“一个段落应该多少字”，也不规定“一句话一段一定错误”。真正的标准是：一个段落是不是承担一个相对完整的 semantic / argumentative responsibility。
 
-如果两段实际上只完成一个论证动作，就应该考虑合并；如果一个段落同时塞进了几个不同职责，就应该考虑拆分。第一轮里，我们发现“这是一篇教程”和“教程范围限定”原本分成两个相邻段落，但其实都在完成同一个 framing action，所以把它们合并了。
+如果两段实际上只完成一个论证动作，就应该考虑合并；如果一个段落同时塞进了几个不同职责，就应该考虑拆分。第一轮 G6 发现，“这是一篇教程”和“教程范围限定”虽然分成两个相邻段落，但承担的是同一个 framing action，所以最终合并。
 
 这一点很重要，因为 DraftGate 的公开 Core 不应该规定某个作者喜欢长段还是短段。段落审美属于 Custom Rules，而不是 Core。
 
@@ -135,15 +135,15 @@ G6 只看段落职责。它不规定“一个段落应该多少字”，也不�
 
 G7 是最后的语言和机械模式检查。到这里，主问题、scope、architecture、claim boundary、paragraph organization 都已经冻结，也就是这些更上层的决定不再由 G7 重做。G7 只处理最后的表达层。
 
-它主要检查重复的 meta-signposting、连续使用同一种句式、模板化 section opening、固定强结尾、机械平行以及其它 AI trace。第一轮里，G7 清理过连续出现的“这一部分……”“这里的……”“最后回看……”等说明性壳子，但没有重新改变结构。
+它主要检查重复的 meta-signposting、连续使用同一种句式、模板化 section opening、固定强结尾、机械平行以及其它 AI trace。第一轮 G7 清理过连续出现的“这一部分……”“这里的……”“最后回看……”等说明性壳子，但没有重新改变结构。
 
 G7 完成后，current_gate 变成 null，status 变成 complete。这意味着当前 cycle 结束，DraftGate 释放文章控制权。
 
 ## 11. 不满意怎么办：reopen 和新 cycle
 
-DraftGate 并不假设一次 G1→G7 就一定得到永远不需要再改的文章。
+DraftGate 不把一次 G1→G7 当作永久定稿。
 
-第一种情况是当前 cycle 还没完成，你刚做完一个 Gate 就发现不满意。例如刚完成 G4，state 已经走到 G5，但你觉得 G4 的解释方式有问题。这时可以执行：
+一种情况是当前 cycle 还没完成，而你刚做完一个 Gate 就发现不满意。例如刚完成 G4，state 已经走到 G5，但你觉得 G4 的解释方式有问题。这时可以执行：
 
 ```bash
 ./writing reopen --article-id 20261005-example-topic
@@ -151,7 +151,7 @@ DraftGate 并不假设一次 G1→G7 就一定得到永远不需要再改的文�
 
 reopen 只能退回最近完成的一个 Gate。它不会自动修改文章，只是把 state 恢复到那个 Gate，然后你再和 Agent 重新讨论、重新执行。
 
-第二种情况是 G1–G7 已经全部 complete，但你读完后仍然觉得文章需要系统性重做。这时启动新的 cycle：
+另一种情况是 G1–G7 已经 complete，但读完后仍然需要系统性重做。这时启动新的 cycle：
 
 ```bash
 ./writing start-cycle --article-id 20261005-example-topic --from G3
@@ -159,7 +159,7 @@ reopen 只能退回最近完成的一个 Gate。它不会自动修改文章，�
 
 原则是从最早受到影响的 Gate 开始：主问题变了从 G1，范围变了从 G2，结构或正文展开有问题从 G3，读者理解问题从 G4，证据问题从 G5，段落问题从 G6，只是语言问题从 G7。
 
-这篇教程就是一个真实例子。第一轮 G1→G7 全部 PASS，但我们发现文章结构完整、正文却太薄。问题属于 architecture / draft development，所以没有从 G1 重来，而是开启 cycle 2，从 G3 进入。
+这篇教程本身就是一个真实例子：第一轮 G1→G7 全部 PASS，但文章虽然结构完整，正文仍然太薄。问题属于 architecture / draft development，所以没有从 G1 重来，而是开启 cycle 2，从 G3 进入。
 
 在 DraftGate 的设计里，多轮 cycle 被视为正常使用方式，而不是一次流程未能完成的标志。每一轮都以当时的文章作为新 baseline，再从最早需要重做的位置往后检查。
 
@@ -167,11 +167,11 @@ reopen 只能退回最近完成的一个 Gate。它不会自动修改文章，�
 
 DraftGate Core 有意保持作者中立。它不会规定你必须使用第一人称还是第三人称，也不会规定段落必须多长、标题必须是什么格式，更不会内置某个作者自己的禁用词表。
 
-但用户长期使用后一定会形成自己的偏好。例如你可以告诉 Agent：“以后 G6 尽量保留完整的长段落，不要为了视觉节奏频繁拆段。”如果你明确说这是长期规则，Agent 可以把它保存到对应 Gate 的 Custom Rules，例如 `.writing-rules/G6.md`。
+长期使用后，用户通常会形成自己的偏好。例如你可以告诉 Agent：“以后 G6 尽量保留完整的长段落，不要为了视觉节奏频繁拆段。”如果你明确说这是长期规则，Agent 可以把它保存到对应 Gate 的 Custom Rules，例如 `.writing-rules/G6.md`。
 
 普通用户不需要自己打开这些文件维护。你只需要在对话中说“这条以后保留”“把刚才那条长期规则删掉”，Agent 负责维护。这里有一个严格边界：执行 Gx 时，只允许 Gx 的 Custom Rules 参与。G3 的个人偏好不能偷偷进入 G4，G6 的段落偏好也不能影响 G5 的证据判断。
 
-而且 Core 的优先级高于 Custom Rules。如果个人规则和 Core 冲突，Core 生效，冲突的 Custom Rule 在本次执行中被忽略，Agent 应该明确告诉你发生了冲突，同时不能因为冲突本身去改变 workflow state。这样 DraftGate 可以一边保持一个通用、可开源的核心，一边让每个用户通过长期使用逐渐形成自己的写作系统。
+而且 Core 的优先级高于 Custom Rules。如果个人规则和 Core 冲突，Core 生效，冲突的 Custom Rule 在本次执行中被忽略，Agent 应该明确告诉你发生了冲突，同时不能因为冲突本身去改变 workflow state。这样既能保持 Core 的通用性，也能让用户在长期使用中逐渐形成自己的写作系统。
 
 ## 13. complete 以后仍然可以自由修改
 
@@ -181,10 +181,10 @@ DraftGate Core 有意保持作者中立。它不会规定你必须使用第一�
 
 ## 14. 回看：DraftGate 实际控制了什么
 
-完整流程可以概括为：准备 GitHub / Fork / Agent → Pre-G1 brainstorm → G1 主问题与 Thesis → G2 Scope → G3 Architecture + Draft Construction → G4 Reader Accessibility → G5 Claim & Evidence Boundary → G6 Paragraph Organization → G7 Final Language & Pattern Audit → complete。
+整套流程可以概括为：准备 GitHub / Fork / Agent → Pre-G1 brainstorm → G1 主问题与 Thesis → G2 Scope → G3 Architecture + Draft Construction → G4 Reader Accessibility → G5 Claim & Evidence Boundary → G6 Paragraph Organization → G7 Final Language & Pattern Audit → complete。
 
 如果当前 Gate 不满意，可以 reopen；如果整个 cycle 已经结束但还想系统修改，可以 start-cycle --from Gx；如果只是局部改动，complete 后直接编辑即可。与此同时，长期风格偏好可以逐步沉淀到对应 Gate 的 Custom Rules。
 
-可以把这套系统分成三种角色：人负责关键判断，AI 负责讨论和编辑，Git/state/CI 负责记录和验证。DraftGate 的价值不在于替你自动写完一篇文章，而在于把 AI 辅助写作变成一个可以暂停、检查、重做和逐步改进的过程。
+这套系统可以分成三种角色：人负责关键判断，AI 负责讨论和编辑，Git/state/CI 负责记录和验证。DraftGate 的价值不在于替你自动写完一篇文章，而在于把 AI 辅助写作变成一个可以暂停、检查、重做和逐步改进的过程。
 
 这篇教程本身也是这套方法的一次验证。第一轮我们成功走完 G1–G7，却发现“结构正确”并不等于“正文已经完成”；于是修改 G3，让它承担 Draft Construction，再从 G3 开启第二轮。这个过程至少说明，对这类写作流程，仅靠规则在纸面上自洽还不够；真实 dogfood 能暴露仅靠静态检查不容易发现的职责缺口。

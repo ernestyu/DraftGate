@@ -9,13 +9,14 @@
     "G1",
     "G2"
   ],
-  "current_gate": "G7",
+  "current_gate": null,
   "completed": [
     "G3",
     "G4",
     "G5",
-    "G6"
+    "G6",
+    "G7"
   ],
-  "status": "in_progress",
-  "article_revision": "37f7928cd6c5cffd28af34abf952d7434ee49a89"
+  "status": "complete",
+  "article_revision": "bc03d419732f932818000d3a506ed2e72335ab7e"
 }
