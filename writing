@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$repo_root"
+
+cmd="${1:-}"
+if [[ -z "$cmd" ]]; then
+  echo "usage: ./writing <bootstrap|init|show|validate|advance|reconcile|reopen|start-cycle|test> ..."
+  exit 2
+fi
+shift
+
+case "$cmd" in
+  bootstrap)
+    exec python3 scripts/bootstrap-writing-article.py "$@"
+    ;;
+  init|show|validate|advance|reconcile|reopen|start-cycle)
+    exec python3 scripts/writing-state.py "$cmd" "$@"
+    ;;
+  test)
+    exec bash scripts/ci/validate-writing.sh
+    ;;
+  *)
+    echo "unknown command: $cmd" >&2
+    exit 2
+    ;;
+esac

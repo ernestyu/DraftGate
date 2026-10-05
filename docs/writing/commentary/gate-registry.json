@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "workflow": "write-commentary",
+  "execution_mode": "sequential_single_gate",
+  "gates": [
+    {
+      "id": "G1",
+      "name": "Main Question & Thesis",
+      "rule": "gates/01-main-question.md",
+      "resources": [],
+      "allow_no_change": false
+    },
+    {
+      "id": "G2",
+      "name": "Scope & Branch Control",
+      "rule": "gates/02-scope-branch-control.md",
+      "resources": [],
+      "allow_no_change": false
+    },
+    {
+      "id": "G3",
+      "name": "Argument Architecture",
+      "rule": "gates/03-argument-architecture.md",
+      "resources": ["structure-rules.md"],
+      "allow_no_change": false
+    },
+    {
+      "id": "G4",
+      "name": "Reader Accessibility",
+      "rule": "gates/04-reader-accessibility.md",
+      "resources": [],
+      "allow_no_change": false
+    },
+    {
+      "id": "G5",
+      "name": "Claim & Evidence Boundary",
+      "rule": "gates/05-claim-evidence-boundary.md",
+      "resources": [],
+      "allow_no_change": true
+    },
+    {
+      "id": "G6",
+      "name": "Paragraph Organization",
+      "rule": "gates/06-paragraph-organization.md",
+      "resources": ["language-rules.md"],
+      "allow_no_change": false
+    },
+    {
+      "id": "G7",
+      "name": "Final Language & Pattern Audit",
+      "rule": "gates/07-final-language-ai-trace.md",
+      "resources": [
+        "language-rules.md",
+        "checklist.md",
+        "ai-trace/rules.md"
+      ],
+      "allow_no_change": false
+    }
+  ],
+  "global_resources": ["../ARTICLE_TEMPLATE.md"]
+}

@@ -1,0 +1,4 @@
+# The public workflow does not ship a language-specific phrase blacklist.
+# G7 uses semantic pattern rules from ai-trace/rules.md.
+version: 1
+entries: []
