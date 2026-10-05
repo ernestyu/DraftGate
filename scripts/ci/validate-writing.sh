@@ -26,6 +26,10 @@ zero_sha="0000000000000000000000000000000000000000"
 commits=()
 
 if [[ -n "$before" && "$before" != "$zero_sha" ]] && git cat-file -e "$before^{commit}" 2>/dev/null; then
+  # Re-validate the previous branch HEAD as a self-healing guard.
+  # If a prior push did not create an Actions run, the next push will
+  # automatically validate that missed commit before validating new commits.
+  commits+=("$before")
   while IFS= read -r commit; do
     [[ -n "$commit" ]] && commits+=("$commit")
   done < <(git rev-list --reverse "$before..$after")
