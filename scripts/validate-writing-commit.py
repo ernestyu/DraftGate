@@ -357,10 +357,38 @@ def validate_closeout_commit(root: Path, commit: str, article_id: str, cycle: in
 
 
 def validate_maintenance_commit(root: Path, commit: str, article_id: str) -> list[str]:
+    parent = parent_of(root, commit)
+    if parent is None:
+        return ["maintenance commit requires parent"]
     changed = changed_paths(root, commit)
-    protected = {article_rel(article_id), state_rel(article_id)}
-    if changed & protected:
-        return ["maintenance must not modify bound article or active state"]
+
+    # Temporary-artifact maintenance is deletion-only.
+    for path in changed:
+        if not file_exists_at(root, parent, path) or file_exists_at(root, commit, path):
+            return ["temporary-artifact maintenance may delete files only"]
+
+    # No in-progress active state, or article bound by one, may be modified.
+    for path in changed:
+        if path.startswith(".writing-state/write-commentary/") and path.endswith(".json"):
+            state = read_json_at(root, parent, path)
+            if state.get("status") == "in_progress":
+                return ["maintenance must not modify in-progress active state"]
+
+    active_prefix = ".writing-state/write-commentary/"
+    for path in git(root, "ls-tree", "-r", "--name-only", parent).splitlines():
+        if not path.startswith(active_prefix) or not path.endswith(".json"):
+            continue
+        state = read_json_at(root, parent, path)
+        if state.get("status") == "in_progress" and state.get("article_path") in changed:
+            return ["maintenance must not modify in-progress bound article"]
+
+    allowed = (
+        "articles/",
+        ".writing-state/write-commentary/",
+        "tests/fixtures/",
+    )
+    if any(not path.startswith(allowed) for path in changed):
+        return ["temporary-artifact maintenance path is not authorized"]
     return []
 
 
@@ -374,14 +402,24 @@ def validate_start_cycle_commit(root: Path, commit: str, article_id: str) -> lis
     changed = changed_paths(root, commit)
 
     if srel not in changed:
-        failures.append("start-cycle must change bound state file")
+        failures.append("start-cycle must create/change bound active state file")
         return failures
     if arel in changed:
         failures.append("start-cycle must not modify article content")
 
-    before = read_json_at(root, parent, srel)
     after = read_json_at(root, commit, srel)
     registry = VW.load_registry(root)
+    previous_cycle = after.get("cycle", 0) - 1
+    if file_exists_at(root, parent, srel):
+        before = read_json_at(root, parent, srel)
+    else:
+        ar = archive_rel(article_id, previous_cycle)
+        if not file_exists_at(root, parent, ar):
+            return ["start-cycle requires previous complete active state or cycle archive"]
+        before = read_json_at(root, parent, ar)
+        if ar in changed:
+            failures.append("start-cycle must not modify historical archive")
+
     if VW.validate_state(registry, before):
         failures.append("start-cycle requires valid previous state")
     if before.get("status") != "complete" or before.get("current_gate") is not None:
