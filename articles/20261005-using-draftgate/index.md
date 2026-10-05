@@ -22,9 +22,7 @@ DraftGate 的处理方式是把这些责任拆开。一次 invocation，也就�
 
 ## 2. 使用前准备
 
-最简单的使用方式是先准备一个自己的 GitHub 仓库副本。
-
-打开 DraftGate 仓库：
+最简单的使用方式是先准备一个自己的 GitHub 仓库副本。打开 DraftGate 仓库：
 
 ```text
 https://github.com/ernestyu/DraftGate
@@ -36,9 +34,7 @@ https://github.com/ernestyu/DraftGate
 https://github.com/<your-name>/DraftGate
 ```
 
-后面的文章、state、Custom Rules 和 GitHub Actions 都发生在这个 fork 中，不会修改原始 DraftGate 仓库。
-
-接下来需要一个能够读取和修改 GitHub 仓库的 AI Agent。它可以是能够连接 GitHub 的 ChatGPT，也可以是其它可以读文件、改文件、提交 Git commit 的 Agent。把你自己的 fork 地址交给它，并明确告诉它先读取仓库里的：
+后面的文章、state、Custom Rules 和 GitHub Actions 都发生在这个 fork 中，不会修改原始 DraftGate 仓库。接下来需要一个能够读取和修改 GitHub 仓库的 AI Agent。它可以是能够连接 GitHub 的 ChatGPT，也可以是其它可以读文件、改文件、提交 Git commit 的 Agent。把你自己的 fork 地址交给它，并明确告诉它先读取仓库里的：
 
 ```text
 AGENTS.md
@@ -69,9 +65,7 @@ Pre-G1 可以理解为 brainstorm。它不属于 state machine，没有 Gate ID�
 
 你可以说：“我想写一篇关于 AI 写作的文章，但还没想清楚角度。”也可以继续追问：“这个题目真正值得写的地方是什么？”“我不满意现有 AI 写作工具的到底是哪一点？”“这个问题是不是太宽？”
 
-Pre-G1 的目标不是得到一篇文章，而是让你自己逐渐弄清楚：为什么想写、想讨论什么、可能要回答什么问题。
-
-这篇教程本身就是一个例子。我们最开始只有一句话：“写一篇 DraftGate 使用教程。”如果直接进入 G1，得到的主问题很可能只是“DraftGate 怎么用”，文章也容易变成 README 的扩写。经过几轮开放讨论后，才逐渐明确这篇教程真正要解释的是：为什么一次性生成和复杂 writing skill 仍然容易失控，以及 DraftGate 怎样把人的判断拆到一个个可控制的步骤里。
+Pre-G1 的目标不是得到一篇文章，而是让你自己逐渐弄清楚：为什么想写、想讨论什么、可能要回答什么问题。这篇教程本身就是一个例子。我们最开始只有一句话：“写一篇 DraftGate 使用教程。”如果直接进入 G1，得到的主问题很可能只是“DraftGate 怎么用”，文章也容易变成 README 的扩写。经过几轮开放讨论后，才逐渐明确这篇教程真正要解释的是：为什么一次性生成和复杂 writing skill 仍然容易失控，以及 DraftGate 怎样把人的判断拆到一个个可控制的步骤里。
 
 等方向大致清楚后，再初始化 state：
 
@@ -105,17 +99,13 @@ G3 是这套系统里非常关键的一步，而且也是我们第一次 dogfood
 
 第一部分是 Argument Architecture。Agent 会根据 G1 的主问题和 G2 的 scope，提出 1–3 个适合的 narrative mode，也就是整篇文章主要靠什么方式向前推进。例如 question-driven 表示围绕一个问题逐层深入，case-driven 表示跟随一个真实案例推进，hybrid 则允许两者组合，但必须有一个明确主线。这个选择不能由 Agent 自动决定，用户必须明确批准。
 
-这篇教程选择的是 question-driven 作为 primary driver，同时把这篇教程自己的生成过程作为 case-driven secondary device。也就是说，文章主要围绕“怎样把 AI 写作变成可控过程”这个问题推进，同时用真实 dogfood 过程不断落地。
-
-接着，G3 需要建立 Explanatory Spine。它不是目录，而是整篇文章真正的推理链：如果把标题、例子和修辞都拿掉，文章从起点怎样一步步推到最后判断。本文的 spine 可以压缩成：一次性生成把多种写作职责同时交给模型，因此难以稳定控制；human-in-the-loop 需要把人的判断拆成连续阶段；DraftGate 再用 state 和 CI 把这些阶段变成可执行、可验证的流程。
+这篇教程选择的是 question-driven 作为 primary driver，同时把这篇教程自己的生成过程作为 case-driven secondary device。也就是说，文章主要围绕“怎样把 AI 写作变成可控过程”这个问题推进，同时用真实 dogfood 过程不断落地。接着，G3 需要建立 Explanatory Spine。它不是目录，而是整篇文章真正的推理链：如果把标题、例子和修辞都拿掉，文章从起点怎样一步步推到最后判断。本文的 spine 可以压缩成：一次性生成把多种写作职责同时交给模型，因此难以稳定控制；human-in-the-loop 需要把人的判断拆成连续阶段；DraftGate 再用 state 和 CI 把这些阶段变成可执行、可验证的流程。
 
 第二部分是 Draft Construction。这个部分是在第一次 dogfood 后补进去的。第一次运行时，G3 虽然搭出了完整结构，但很多 section 只有一两句话，只能算 section skeleton，也就是“这一节应该做什么”已经知道了，但真正的正文还没有展开。随后 G4–G7 都严格按照自己的职责工作，最后所有 Gate 都 PASS，文章却仍然只是一个“结构正确的 outline”。这暴露出一个很实际的问题：没有任何 Gate 明确负责把 skeleton 展开成完整 first draft。
 
 现在 G3 明确承担这个责任。如果文章还是 seed、outline、section skeleton 或 placeholder-heavy draft，G3 不能 PASS。每个 major section 都必须有 substantive prose，也就是实际承担解释、论证或教程职责的完整正文，而不只是标题和提纲说明。
 
-这并不意味着 G3 要顺手完成所有后续工作。它可以写正文、解释和过渡，但不能把 G4 的可理解性 audit、G5 的证据压力测试、G6 的段落整理或 G7 的最终语言清理提前做掉。
-
-我们现在正在进行的第二轮 dogfood，就是从 G3 重新进入，专门验证这个改动。第一轮留下的结构被保留，但原来过薄的 sections 被展开成完整教程正文。
+这并不意味着 G3 要顺手完成所有后续工作。它可以写正文、解释和过渡，但不能把 G4 的可理解性 audit、G5 的证据压力测试、G6 的段落整理或 G7 的最终语言清理提前做掉。我们现在正在进行的第二轮 dogfood，就是从 G3 重新进入，专门验证这个改动。第一轮留下的结构被保留，但原来过薄的 sections 被展开成完整教程正文。
 
 ## 7. G4 — Reader Accessibility
 
@@ -179,13 +169,9 @@ DraftGate Core 有意保持作者中立。它不会规定你必须使用第一�
 
 但用户长期使用后一定会形成自己的偏好。例如你可以告诉 Agent：“以后 G6 尽量保留完整的长段落，不要为了视觉节奏频繁拆段。”如果你明确说这是长期规则，Agent 可以把它保存到对应 Gate 的 Custom Rules，例如 `.writing-rules/G6.md`。
 
-普通用户不需要自己打开这些文件维护。你只需要在对话中说“这条以后保留”“把刚才那条长期规则删掉”，Agent 负责维护。
+普通用户不需要自己打开这些文件维护。你只需要在对话中说“这条以后保留”“把刚才那条长期规则删掉”，Agent 负责维护。这里有一个严格边界：执行 Gx 时，只允许 Gx 的 Custom Rules 参与。G3 的个人偏好不能偷偷进入 G4，G6 的段落偏好也不能影响 G5 的证据判断。
 
-这里有一个严格边界：执行 Gx 时，只允许 Gx 的 Custom Rules 参与。G3 的个人偏好不能偷偷进入 G4，G6 的段落偏好也不能影响 G5 的证据判断。
-
-而且 Core 的优先级高于 Custom Rules。如果个人规则和 Core 冲突，Core 生效，冲突的 Custom Rule 在本次执行中被忽略，Agent 应该明确告诉你发生了冲突，同时不能因为冲突本身去改变 workflow state。
-
-这样 DraftGate 可以一边保持一个通用、可开源的核心，一边让每个用户通过长期使用逐渐形成自己的写作系统。
+而且 Core 的优先级高于 Custom Rules。如果个人规则和 Core 冲突，Core 生效，冲突的 Custom Rule 在本次执行中被忽略，Agent 应该明确告诉你发生了冲突，同时不能因为冲突本身去改变 workflow state。这样 DraftGate 可以一边保持一个通用、可开源的核心，一边让每个用户通过长期使用逐渐形成自己的写作系统。
 
 ## 13. complete 以后仍然可以自由修改
 
