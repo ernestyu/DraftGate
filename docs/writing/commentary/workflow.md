@@ -77,7 +77,7 @@ Core applies
 
 ## Persistent Custom Rules
 
-Persistent Custom Rules are optional per-Gate user preferences stored as:
+Persistent Custom Rules are per-Gate long-term user preferences stored as:
 
 ```text
 .writing-rules/G1.md
@@ -85,9 +85,11 @@ Persistent Custom Rules are optional per-Gate user preferences stored as:
 .writing-rules/G7.md
 ```
 
+A new repository includes all seven files as empty scaffolding. Empty scaffolding carries no author-specific preference and is valid.
+
 Users are not expected to edit these files manually. The intended interaction is conversational: the user explicitly asks the Agent to keep, change, or remove a long-term preference, and the Agent maintains the corresponding Gate file.
 
-Do not automatically turn one-off article edits into persistent rules.
+Do not automatically turn one-off article edits into persistent rules. A saved preference participates only in its matching Gate, and Core always has higher authority.
 
 ## Runtime state
 
