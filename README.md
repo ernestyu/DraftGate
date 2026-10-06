@@ -8,7 +8,7 @@ A Git-native, staged editorial workflow for AI-assisted long-form writing.
 
 DraftGate turns one Markdown article into a stateful G1→G7 process. The language model handles judgment and editing; Git records document revisions; deterministic validators enforce gate order, freshness, and legal state transitions.
 
-The built-in editorial rules are intentionally language-neutral. They focus on reasoning, structure, evidence, paragraph responsibility, and mechanical repetition rather than a particular author's voice. The same workflow can be used for Chinese or English writing.
+DraftGate Core is intentionally author-neutral by default. It focuses on reasoning, structure, evidence, paragraph responsibility, and mechanical repetition rather than shipping one author's voice. DraftGate also has a native Persistent Custom Rules layer, so a fork can gradually develop the long-term style preferences of one author or writing profile. The same Core workflow can be used for Chinese or English writing.
 
 ## Design principles
 
@@ -40,6 +40,15 @@ articles/
 .writing-state/
   write-commentary/
     20261005-example-topic.json
+
+.writing-rules/
+  G1.md
+  G2.md
+  G3.md
+  G4.md
+  G5.md
+  G6.md
+  G7.md
 ```
 
 There is no Hugo, CMS, front matter, cover image, or publishing dependency.
@@ -89,9 +98,11 @@ The agent should not pre-run later gates. Human discussion and decisions remain 
 
 G3 is also where an outline becomes a substantive first draft when needed. A seed or section skeleton cannot pass G3 merely because the headings are correct.
 
-## Persistent Custom Rules
+## Personalize your writing style
 
-DraftGate Core remains author-neutral. Long-term personal preferences live in an optional second layer:
+DraftGate Core starts author-neutral, but a DraftGate fork is meant to support a persistent personal writing profile.
+
+The repository includes one Custom Rules file for every Gate:
 
 ```text
 .writing-rules/G1.md
@@ -99,7 +110,24 @@ DraftGate Core remains author-neutral. Long-term personal preferences live in an
 .writing-rules/G7.md
 ```
 
-Users do not need to edit these files manually. Tell the Agent conversationally that a preference should be kept, changed, or removed as a long-term rule. Only the current Gate's Custom Rules may participate in that Gate. Core always wins on conflict.
+These files start without author-specific rules. Users normally do not edit them manually. Tell the Agent conversationally when a preference should become long-term:
+
+```text
+"Keep this as a long-term rule: do not use one-sentence paragraphs just for emphasis."
+→ G6
+
+"Keep this preference: avoid singular first-person 'I' unless necessary."
+→ G7
+
+"Keep this rule: do not force a historical anecdote into the opening."
+→ G3
+```
+
+A one-off article edit does not automatically become a persistent rule. The user must explicitly ask to keep, change, or remove a long-term preference.
+
+During Gate `Gx`, only `.writing-rules/Gx.md` participates. Custom Rules from other Gates stay out of the current Gate, and Core always wins if a saved preference conflicts with the workflow contract.
+
+See [Persistent Custom Rules](docs/writing/CUSTOM_RULES.md) for the full behavior and examples.
 
 ## Advanced / local usage
 
@@ -165,7 +193,7 @@ GitHub Actions remains optional for local-only use; in that mode `./writing clos
 
 ## Scope
 
-The public rules deliberately avoid language-specific phrase bans, fixed paragraph-length targets, mandatory first-person policies, and a prescribed authorial voice. Those belong in project-specific or personal extensions, not in the core workflow.
+The public Core deliberately avoids language-specific phrase bans, fixed paragraph-length targets, mandatory first-person policies, and a prescribed authorial voice. Those choices belong in Persistent Custom Rules when a user wants them. A new fork starts neutral; explicit long-term preferences gradually turn that fork into the user's writing profile.
 
 ## License
 
