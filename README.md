@@ -61,7 +61,7 @@ Normal use is Agent-first:
 3. Brainstorm freely in Pre-G1.
 4. Tell the Agent to begin DraftGate for the article.
 5. Execute one Gate at a time through conversation.
-6. After G7 and CI PASS, the Agent closes the cycle: it preserves Gate evidence, writes one high-level result to `main`, archives the completed state, and removes the temporary writing branch.
+6. After G7 and CI PASS, GitHub Actions closes the cycle automatically: it preserves Gate evidence, writes one high-level result to `main`, archives the completed state, and removes the temporary writing branch. No user command is required.
 
 A normal user does not need to manage Git branches, trailers, evidence tags, archive paths, or squash mechanics.
 
@@ -144,7 +144,9 @@ The included workflow runs on `ubuntu-latest` and validates:
 - tracked state freshness;
 - workflow-controlled commits and trailers.
 
-GitHub Actions is optional for local-only use, but closeout requires the Agent to verify CI PASS for the terminal G7 commit before supplying that exact SHA. The same validators run locally with:
+For GitHub-backed normal use, a successful terminal G7 run triggers `Writing Auto Closeout` automatically. The closeout workflow re-verifies the exact writing-branch head, G7 trailers, complete state, and branch/cycle identity before it receives write permission to publish evidence, update `main`, archive state, and remove the writing branch. No user-side closeout command is part of the normal flow.
+
+GitHub Actions remains optional for local-only use; in that mode `./writing closeout` is the explicit low-level operation. The same validators run locally with:
 
 ```bash
 ./writing test

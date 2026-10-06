@@ -1,0 +1,134 @@
+name: Writing Auto Closeout
+
+on:
+  workflow_run:
+    workflows:
+      - Writing Workflow CI
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+concurrency:
+  group: writing-closeout-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  closeout:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'writing/') &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out exact writing branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verify terminal writing head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+          WRITING_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$EXPECTED_SHA" ]]; then
+            echo "WRITING_AUTO_CLOSEOUT_FAIL branch head moved: expected=$EXPECTED_SHA actual=$actual_sha"
+            exit 1
+          fi
+
+          git fetch origin main --tags
+          remote_sha="$(git ls-remote origin "refs/heads/$WRITING_BRANCH" | awk '{print $1}')"
+          if [[ -z "$remote_sha" || "$remote_sha" != "$EXPECTED_SHA" ]]; then
+            echo "WRITING_AUTO_CLOSEOUT_FAIL remote writing branch no longer matches validated SHA"
+            exit 1
+          fi
+
+          git switch -C "$WRITING_BRANCH" "$EXPECTED_SHA"
+          git branch -f main refs/remotes/origin/main
+
+      - name: Verify terminal G7 contract
+        id: terminal
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+          WRITING_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+
+          message="$(git show -s --format=%B "$EXPECTED_SHA")"
+          workflow="$(printf '%s\n' "$message" | sed -n 's/^Writing-Workflow: //p' | tail -n1)"
+          gate="$(printf '%s\n' "$message" | sed -n 's/^Writing-Gate: //p' | tail -n1)"
+          article="$(printf '%s\n' "$message" | sed -n 's/^Writing-Article: //p' | tail -n1)"
+
+          if [[ "$workflow" != "gate" || "$gate" != "G7" ]]; then
+            echo "WRITING_AUTO_CLOSEOUT_SKIP validated commit is not terminal G7"
+            exit 0
+          fi
+
+          if [[ ! "$article" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+            echo "WRITING_AUTO_CLOSEOUT_FAIL invalid Writing-Article trailer"
+            exit 1
+          fi
+
+          state=".writing-state/write-commentary/$article.json"
+          if [[ ! -f "$state" ]]; then
+            echo "WRITING_AUTO_CLOSEOUT_FAIL terminal active state missing"
+            exit 1
+          fi
+
+          cycle="$(python3 - "$state" "$article" <<'PY'
+          import json
+          import sys
+
+          path, expected_article = sys.argv[1:]
+          with open(path, encoding="utf-8") as fh:
+              state = json.load(fh)
+
+          if state.get("article_id") != expected_article:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL state article_id mismatch")
+          if state.get("status") != "complete":
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal state is not complete")
+          if state.get("current_gate") is not None:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal current_gate must be null")
+          completed = state.get("completed")
+          if completed != ["G1", "G2", "G3", "G4", "G5", "G6", "G7"] and "G7" not in completed:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal completed set does not contain G7")
+          cycle = state.get("cycle")
+          if not isinstance(cycle, int) or isinstance(cycle, bool) or cycle < 1:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL invalid cycle")
+          print(cycle)
+          PY
+          )"
+
+          expected_branch="writing/$article/c$cycle"
+          if [[ "$WRITING_BRANCH" != "$expected_branch" ]]; then
+            echo "WRITING_AUTO_CLOSEOUT_FAIL branch/state identity mismatch"
+            exit 1
+          fi
+
+          echo "article=$article" >> "$GITHUB_OUTPUT"
+          echo "terminal=true" >> "$GITHUB_OUTPUT"
+
+      - name: Close writing cycle
+        if: steps.terminal.outputs.terminal == 'true'
+        shell: bash
+        env:
+          ARTICLE_ID: ${{ steps.terminal.outputs.article }}
+          VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          ./writing closeout \
+            --article-id "$ARTICLE_ID" \
+            --ci-passed-for "$VALIDATED_SHA"
