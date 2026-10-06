@@ -2,119 +2,125 @@
 
 ## Goal
 
-降低普通读者的理解成本，同时保持专业内容、机制、条件和证据边界。
+Reduce reader effort while preserving technical content, mechanism, conditions, uncertainty, and evidence boundaries.
 
 ## Reader outcome
 
-- 普通读者能理解术语和因果跳跃。
-- 中层读者能带走至少一个可复用的理解框架。
-- 专业读者不会觉得内容被幼儿化。
-- 当抽象机制难以直观理解时，读者能够通过一个准确的类比、具体场景或可感知意象建立直觉，并回到真实机制。
+- General readers can follow terminology and intermediate reasoning.
+- Intermediate readers can take away at least one reusable understanding framework.
+- Expert readers do not feel that the mechanism has been oversimplified.
+- When an abstract mechanism is difficult to understand directly, an accurate analogy, concrete scenario, or perceptible image may build intuition and then return the reader to the real mechanism.
 
 ## Allowed
 
-- 首次出现专业概念时补充直觉解释
-- 调整解释先后顺序
-- 补足必要的中间推理
-- 将复杂机制表达成可复用框架
-- 删除无必要炫技术语
-- 使用准确的解释型类比帮助读者理解抽象机制
-- 使用具体场景帮助读者形成直觉
-- 使用少量物理或现实意象解释抽象关系
-- 在必要时增加最小边界说明，指出类比在哪些地方不再成立
+- add an intuitive explanation when a specialist concept first appears;
+- improve explanation order;
+- add missing intermediate reasoning;
+- express a complex mechanism as a reusable conceptual framework;
+- remove unnecessary technical display;
+- use an accurate explanatory analogy for an abstract mechanism;
+- use a concrete scenario to build intuition;
+- use a small amount of physical or real-world imagery to explain an abstract relationship;
+- add the minimum boundary statement needed to show where an analogy stops mapping.
 
-解释型类比必须承担清楚的机制映射。Agent 在执行 G4 时必须能够判断：
+An explanatory analogy must perform a clear mechanism mapping. During G4, the Agent must be able to determine:
 
-- 类比中的关键对象分别对应现实问题中的什么；
-- 类比中的关系对应真实机制中的什么；
-- 类比在哪些地方会失效或不再适用。
+- what the important elements in the analogy map to in the real problem;
+- what relationship in the analogy maps to the real mechanism;
+- where the analogy fails or no longer applies.
 
-不要求正文机械写成映射表，但映射必须真实成立。
+The article does not need to present a mechanical mapping table, but the mapping must actually hold.
 
-例如：
+For example, a statement such as:
 
-“多个 Agent 各自局部优化，并不保证整体协调。”
+~~~text
+Several agents optimizing locally do not guarantee global coordination.
+~~~
 
-可以辅助解释为：
+may be explained with a neutral scenario in which independent actors make locally reasonable decisions without a shared mechanism for timing, priorities, or global objectives.
 
-“这更像一支没有指挥的乐团。每个乐手都在认真演奏，但如果没人决定速度、进入时机和整体方向，局部都很努力，整体仍然可能失序。”
+The explanation must then return to the real mechanism:
 
-随后必须回到真实机制：
+~~~text
+local optimization != global coordination
+~~~
 
-“局部最优 ≠ 全局协调。”
+The analogy must not replace the mechanism explanation.
 
-类比不能替代机制解释。
-
-具体场景也可以替代传统比喻。例如：
-
-“如果同样一项工作过去需要十个人，现在两个人借助 AI 就能完成，企业对单个员工的依赖会下降，员工退出后的替代成本也会降低。”
-
-这种场景的职责仍然是解释机制，而不是独立增加论点。
+A concrete scenario may be used instead of a metaphor. Its responsibility is still to explain the mechanism rather than introduce an independent argument.
 
 ## Density
 
-不得把文章写成连续比喻。
+Do not turn the article into a sequence of metaphors.
 
-默认原则：
+Default principles:
 
-- 一个复杂机制优先最多使用一个主要类比；
-- 整篇文章可以有多个类比，但必须分散；
-- 每个类比应承担独立解释任务；
-- 如果一个具体场景已经足够解释机制，优先使用场景，不必额外再加比喻。
+- one complex mechanism should normally use no more than one primary analogy;
+- an article may contain multiple analogies, but they should be separated and serve different explanatory tasks;
+- each analogy must have an independent explanatory responsibility;
+- if a concrete scenario already explains the mechanism adequately, do not add another analogy merely for vividness.
 
-禁止：
+Avoid:
 
-- 一句一个比喻
-- 连续多段靠意象推进
-- 密集金句式修辞
-- 为了“生动”反复更换类比解释同一机制
+- analogy in every sentence;
+- several consecutive paragraphs driven mainly by imagery;
+- dense slogan-like rhetoric;
+- repeatedly switching analogies for the same mechanism.
+
+These are functional constraints, not language-specific style rules.
 
 ## Analogy boundary
 
-类比不是证据。
+An analogy is not evidence.
 
-类比不能证明因果，也不能把局部相似写成结构完全相同。
+It cannot prove causality and cannot turn partial similarity into structural identity.
 
-如果类比涉及历史事件、生物进化、物理系统、战争、疾病、生态系统或金融市场，必须特别检查结构差异，避免把差异抹平。
+If an analogy draws on history, biological evolution, physical systems, war, disease, ecosystems, financial markets, or another domain with materially different structure, explicitly check those structural differences.
 
-必要时增加一句最小边界说明。
+Add the minimum boundary statement when needed.
 
-如果类比会误导核心机制，则不得使用。
+Do not use an analogy if it would mislead the reader about the core mechanism.
 
 ## G3 / G4 boundary
 
-G4 负责局部解释型类比、具体场景和可感知意象，不负责重新设计 whole-article central explanatory frame / narrative anchor。
+G4 owns local explanatory analogies, concrete scenarios, and local intuitive explanation.
 
-如果 G3 已经采用 central frame，G4 可以补足其局部映射、解释和边界说明，但不得把一个局部类比升级成新的全文主框架，也不得替换 G3 已冻结的 narrative architecture。
+G4 does not redesign the whole-article central explanatory frame, narrative anchor, or argument architecture frozen in G3.
 
-## Forbidden
+If G3 uses a central frame, G4 may improve local mapping, explanation, and boundary statements, but it must not promote a local analogy into a new whole-article frame.
 
-- 通过删除关键机制、证据、条件或不确定性来“写简单”
-- 改变章节主结构
-- 为吸引眼球新增夸张措辞
-- 做最终语言统一
-- 用类比替代证据
-- 用比喻夸大 claim
-- 为追求生动新增与论证无关的修辞
-- 用多个不同类比解释同一机制造成混乱
-- 修改 G1 thesis
-- 改变 G2 scope
-- 重做 G3 argument architecture
-- 改变 G5 claim strength
+## G5 boundary
 
-如果在解释过程中发现只有改变 claim strength、证据边界或核心机制才能让类比成立：
+G4 must not change claim strength, causal certainty, or evidence boundaries.
+
+If an explanation can be made coherent only by changing claim strength, the evidence boundary, or the core mechanism:
 
 ~~~text
 STOP
 → report conflict
 ~~~
 
-不得在 G4 顺手修复 G5 问题。
+Do not silently perform G5 work inside G4.
+
+## Forbidden
+
+- simplify by deleting a key mechanism, evidence boundary, condition, or uncertainty;
+- change the main section architecture;
+- add exaggerated wording merely to attract attention;
+- perform final language unification;
+- use analogy as evidence;
+- use metaphor to inflate a claim;
+- add rhetoric unrelated to the argument for the sake of vividness;
+- use several conflicting analogies for the same mechanism;
+- modify the G1 thesis;
+- change G2 scope;
+- redo G3 argument architecture;
+- change G5 claim strength.
 
 ## Exit
 
-文章无需专业背景也可跟随，同时没有损失关键专业边界。
+A reader without specialist background can follow the article without losing the important technical boundaries.
 
-对于原本较抽象、普通读者难以形成直觉的主要机制，G4 应确认是否需要一个准确的类比、具体场景或可感知意象；如果使用，必须承担解释任务并能回到真实机制。
+For any major mechanism that remains too abstract for a general reader, G4 must decide whether an analogy, concrete scenario, or local intuitive explanation is actually needed. If one is used, it must perform a real explanatory task and return to the real mechanism.
 
-标记 G4 PASS 后停止。
+Mark G4 PASS and stop.
