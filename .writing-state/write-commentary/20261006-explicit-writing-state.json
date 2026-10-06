@@ -1,0 +1,13 @@
+{
+  "schema_version": 4,
+  "workflow": "write-commentary",
+  "article_id": "20261006-explicit-writing-state",
+  "article_path": "articles/20261006-explicit-writing-state/index.md",
+  "cycle": 1,
+  "entry_gate": "G1",
+  "skipped_by_user": [],
+  "current_gate": "G1",
+  "completed": [],
+  "status": "in_progress",
+  "article_revision": "b9ac479a74d9d69f8acfa58dc89d5c4ac83a293b"
+}
