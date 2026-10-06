@@ -8,7 +8,7 @@ A Git-native, staged editorial workflow for AI-assisted long-form writing.
 
 DraftGate turns one Markdown article into a stateful G1→G7 process. The language model handles judgment and editing; Git records document revisions; deterministic validators enforce gate order, freshness, and legal state transitions.
 
-DraftGate Core is intentionally author-neutral by default. It focuses on reasoning, structure, evidence, paragraph responsibility, and mechanical repetition rather than shipping one author's voice. DraftGate also has a native Persistent Custom Rules layer, so a fork can gradually develop the long-term style preferences of one author or writing profile. The same Core workflow can be used for Chinese or English writing.
+DraftGate Core is intentionally author-neutral by default. It focuses on reasoning, structure, evidence, paragraph responsibility, and mechanical repetition rather than shipping one author's voice. DraftGate also has a native Persistent Custom Rules layer, so a fork can gradually develop the long-term style preferences of one author or writing profile. Core contract language is English, but article language is unrestricted: the same workflow can be used for Chinese, English, or other languages.
 
 ## Design principles
 
