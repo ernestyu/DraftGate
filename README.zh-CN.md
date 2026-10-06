@@ -8,7 +8,7 @@
 
 DraftGate 把一篇 Markdown 文章变成一个有状态的 G1→G7 写作过程。语言模型负责判断与编辑，Git 记录文档版本，确定性的验证器负责检查 Gate 顺序、状态新鲜度和状态转移是否合法。
 
-内置写作规则刻意保持语言中立。它关注论证、结构、证据边界、段落职责和机械化写作模式，而不是某一种作者风格。因此，同一套流程可以直接用于中文或英文写作。
+DraftGate Core 默认保持作者中立。它关注论证、结构、证据边界、段落职责和机械化写作模式，而不是预置某一个作者的文风。DraftGate 同时原生支持 Persistent Custom Rules，因此一个 Fork 可以随着长期偏好的积累，逐渐形成某个作者自己的写作 profile。同一套 Core 可以用于中文或英文写作。
 
 ## 设计原则
 
@@ -42,6 +42,15 @@ articles/
 .writing-state/
   write-commentary/
     20261005-example-topic.json
+
+.writing-rules/
+  G1.md
+  G2.md
+  G3.md
+  G4.md
+  G5.md
+  G6.md
+  G7.md
 ```
 
 DraftGate 不依赖 Hugo、CMS、front matter、封面图或任何发布系统。
@@ -91,9 +100,11 @@ Agent 不应该预先执行后续 Gate。讨论、判断和取舍仍然是流程
 
 G3 还负责在需要时把 seed、outline 或 section skeleton 展开成可以连续阅读的完整初稿。只有标题和少量职责说明，不能因为结构正确就通过 G3。
 
-## Persistent Custom Rules
+## 自定义长期写作风格
 
-DraftGate Core 保持语言和作者中立。用户长期形成的个人偏好放在第二层 Custom Rules 中：
+DraftGate Core 默认不携带任何特定作者风格，但 DraftGate 原生支持一个长期 Persistent Custom Rules 层。一个新的 Fork 从中立状态开始，随后可以逐渐形成自己的写作 profile。
+
+仓库默认包含：
 
 ```text
 .writing-rules/G1.md
@@ -101,7 +112,24 @@ DraftGate Core 保持语言和作者中立。用户长期形成的个人偏好�
 .writing-rules/G7.md
 ```
 
-普通用户不需要手工编辑这些文件。只需要在和 Agent 的对话中明确说某条偏好要长期保留、修改或删除，Agent 负责维护对应 Gate 的规则。执行某个 Gate 时，只允许该 Gate 的 Custom Rules 参与；如果 Custom Rule 与 Core 冲突，以 Core 为准。
+这些文件初始不包含任何个人风格。普通用户也不需要手工编辑它们，只需要在对话中明确告诉 Agent 某条偏好要长期保留，例如：
+
+```text
+“以后不要为了强调而使用一句话单独成段，这条长期保留。”
+→ G6
+
+“以后尽量避免单数第一人称‘我’，除非确实需要。”
+→ G7
+
+“以后不要为了吸引眼球强行用历史故事开头。”
+→ G3
+```
+
+一次性的文章修改不会自动变成长期规则。只有用户明确要求“长期保留、修改或删除”时，Agent 才维护对应 Gate 的 Custom Rules。
+
+执行 Gx 时，只允许 `.writing-rules/Gx.md` 参与当前 Gate。其它 Gate 的 Custom Rules 不参与当前编辑或 PASS / FAIL 判断。如果长期偏好与 Core 冲突，始终以 Core 为准。
+
+详细说明见 [Persistent Custom Rules](docs/writing/CUSTOM_RULES.md)。
 
 ## 高级 / 本地使用
 
@@ -165,9 +193,9 @@ GitHub Actions 不是运行 DraftGate 的必要条件。本地也可以执行同
 
 ## 公开版规则的边界
 
-公开版只保留能够跨语言、跨作者迁移的写作主干。它不会规定某种个人文风，也不包含语言特定的禁用词、固定段落长度、第一人称限制或特定句式黑名单。
+公开 Core 只保留能够跨语言、跨作者迁移的写作主干。它不会预置某种个人文风，也不包含语言特定的禁用词、固定段落长度、第一人称限制或特定句式黑名单。
 
-这些内容如果有需要，应由使用者在自己的项目中扩展，而不是写进 DraftGate 的通用核心。
+这些长期偏好可以直接保存在 Persistent Custom Rules 中。新的 Fork 默认保持中立；随着用户明确保存长期规则，它会逐渐形成属于该作者自己的写作 profile。
 
 ## License
 
