@@ -19,14 +19,12 @@ class WritingG1InsightTests(unittest.TestCase):
 
     def test_thesis_must_add_explanatory_value(self):
         self.assertIn("non-obvious enough to add explanatory value", self.g1)
-        self.assertIn("mechanism", self.g1)
-        self.assertIn("relationship", self.g1)
-        self.assertIn("constraint", self.g1)
-        self.assertIn("structural change", self.g1)
+        for term in ("mechanism", "relationship", "constraint", "structural role", "structural change"):
+            self.assertIn(term, self.g1)
 
     def test_consequence_aggregation_is_not_enough(self):
         self.assertIn("consequence aggregation", self.g1)
-        self.assertIn("common observations", self.g1)
+        self.assertIn("collection of common observations", self.g1)
 
     def test_weak_insight_cannot_pass_or_advance(self):
         self.assertIn("G1 must not automatically PASS", self.g1)
@@ -41,8 +39,12 @@ class WritingG1InsightTests(unittest.TestCase):
 
     def test_forced_profundity_and_claim_inflation_are_forbidden(self):
         self.assertIn("forced profundity forbidden", self.g1)
-        self.assertIn("夸大 claim strength", self.g1)
+        self.assertIn("inflating claim strength", self.g1)
         self.assertIn("concept naming", self.g1)
+
+    def test_waiting_does_not_create_runtime_state(self):
+        self.assertIn("conversational waiting condition", self.g1)
+        self.assertIn("Do not introduce WAITING_INSIGHT", self.g1)
 
     def test_exit_requires_insight_pass(self):
         self.assertIn("Insight Test = PASS", self.g1)

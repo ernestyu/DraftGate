@@ -2,19 +2,19 @@
 
 ## Goal
 
-只确定文章的唯一主问题、核心判断和必要边界。
+Define only the article's single main question, core thesis, and necessary boundary.
 
-在冻结 thesis 之前，必须执行 Insight Test，确认核心判断不仅正确，而且具有足够的 explanatory value，值得支撑一篇完整文章。
+Before freezing the thesis, run the Insight Test. The core judgment must be not only technically correct, but explanatory enough to support a full article.
 
 ## Reader outcome
 
-普通读者应能用一句话说明：这篇文章到底在回答什么。
+A general reader should be able to explain in one sentence what the article is actually answering.
 
-同时，核心判断应让读者看见一个此前不明显、但能帮助解释主问题的 mechanism、relationship、constraint、structural role 或 structural change，而不是只看到一组常识性后果。
+The thesis should also reveal a mechanism, relationship, constraint, structural role, or structural change that helps explain the main question rather than merely listing familiar downstream consequences.
 
 ## Correct observation vs explanatory insight
 
-G1 必须区分：
+G1 must distinguish:
 
 ~~~text
 correct observation
@@ -22,28 +22,28 @@ correct observation
 worth-writing explanatory insight
 ~~~
 
-正确材料不自动等于值得冻结的 thesis。
+Correct material does not automatically become a thesis worth freezing.
 
-例如：
+For example:
 
 ~~~text
-AI 大量替代工作
-→ 收入下降
-→ 税收变化
-→ 身份受影响
+a technology replaces a large amount of work
+→ income changes
+→ tax revenue changes
+→ social identity changes
 ~~~
 
-这些都可能是正确观察，但如果只是把显而易见的 consequences 串在一起，本身未必构成足够强的 explanatory insight。
+These observations may all be correct. But if the article merely links obvious consequences, it may still lack a sufficiently strong explanatory insight.
 
-更强的 insight 应指出一个能够把这些现象连接起来的 mechanism、relationship、constraint、structural role 或 structural change。
+A stronger insight identifies the mechanism, relationship, constraint, structural role, or structural change that connects the observations.
 
-核心标准：
+The core standard is:
 
 ~~~text
 non-obvious enough to add explanatory value
 ~~~
 
-不是：
+not:
 
 ~~~text
 novel at all costs
@@ -51,86 +51,87 @@ novel at all costs
 
 ## Insight Test
 
-G1 PASS 前必须至少回答：
+Before G1 can PASS, answer at least:
 
-1. thesis 是否只是 visible phenomena 或 downstream consequences 的汇总？
-2. thesis 是否指出一个不只停留在表面的 mechanism、relationship、constraint、structural role 或 structural change？
-3. 这个 insight 是否真正帮助解释 G1 main question？
-4. 去掉这个 insight 后，文章是否会退化成 common observations 的集合？
-5. 这个 insight 是否有足够依据，还是只是为了显得“深刻”而被拔高？
+1. Is the thesis merely a summary of visible phenomena or downstream consequences?
+2. Does it identify a mechanism, relationship, constraint, structural role, or structural change beneath the surface?
+3. Does this insight materially help answer the G1 main question?
+4. If the insight were removed, would the article collapse into a collection of common observations?
+5. Is the insight adequately supported, or has it been inflated only to sound deeper?
 
-Insight Test 不要求 thesis 必须原创，也不要求提出新理论。
+The Insight Test does not require an original thesis or a new theory.
 
-目标是 explanatory value，而不是 originality prestige。
+The target is explanatory value, not originality prestige.
 
 ## Weak insight handling
 
-如果 thesis 技术上正确，但仍然主要是 obvious、descriptive 或 consequence-list based：
+If the thesis is technically correct but remains mainly obvious, descriptive, or consequence-list based:
 
 ~~~text
 G1 must not automatically PASS
 ~~~
 
-必须：
+Required behavior:
 
 ~~~text
-指出当前 insight 为什么仍弱
-→ 与用户继续讨论
-→ refine or replace thesis
+explain why the current insight is still weak
+→ continue discussing it with the user
+→ refine or replace the thesis
 → G1 state unchanged
 → do not advance
 ~~~
 
-这是 conversational waiting condition。
+This is a conversational waiting condition.
 
-不得新增 WAITING_INSIGHT、NEEDS_INSIGHT 或其它 runtime state/status。
+Do not introduce WAITING_INSIGHT, NEEDS_INSIGHT, or any other runtime state/status.
 
 ## Insight boundaries
 
-G1 明确禁止：
+G1 explicitly forbids:
 
-- 为了显得新颖而制造 contrarian claim；
-- 为了“有洞见”夸大 claim strength；
-- 要求 thesis 必须 historically original；
-- 要求文章必须提出 new theory；
-- 用 concept naming 代替真实 explanation；
-- 把 uncertainty 写成 certainty 以制造“深度”；
-- 因为某个 mechanism 听起来更有意思，就保留 evidence 不足的说法。
+- manufacturing a contrarian claim only to appear novel;
+- inflating claim strength to appear insightful;
+- requiring the thesis to be historically original;
+- requiring the article to propose a new theory;
+- replacing explanation with concept naming;
+- turning uncertainty into certainty to create an impression of depth;
+- retaining an under-supported mechanism merely because it sounds more interesting.
 
-允许：
+G1 allows:
 
-- 用更有解释力的方式重述已知 mechanism；
-- 指出读者未必已经连接起来的 structural relationship；
-- 用一个 underlying constraint 解释多个熟悉 consequences；
-- 在 evidence 只支持 modest claim 时，冻结 modest but useful insight。
+- restating a known mechanism in a more explanatory way;
+- identifying a structural relationship readers may not already connect;
+- using one underlying constraint to explain several familiar consequences;
+- freezing a modest but useful insight when that is all the evidence supports.
 
-forced profundity forbidden。
-
-novelty is not required。
+~~~text
+forced profundity forbidden
+novelty is not required
+~~~
 
 ## Allowed
 
-- 从选题、材料或旧稿中提炼唯一主问题
-- 用 1–2 句话写核心判断
-- 标注明显事实 / 判断 / 推断边界
-- 执行 Insight Test
-- 在 insight 仍弱时与用户继续讨论，不 advance
-- 在缺少会改变主问题的信息时向用户做最小澄清
+- derive one main question from a topic, source material, or existing draft;
+- state the core thesis in 1–2 sentences;
+- mark obvious fact / judgment / inference boundaries;
+- run the Insight Test;
+- continue discussion without advancing when the insight remains weak;
+- ask the minimum clarification needed when missing information could change the main question.
 
 ## Forbidden
 
-- 重排章节
-- 改写整篇正文
-- 处理段落
-- 做语言润色或 AI trace cleanup
-- 扩展支线
-- 把 consequence aggregation 当成足够的 thesis
-- 为了“深刻”制造 unsupported mechanism
-- 把概念命名当成解释本身
+- reorder sections;
+- rewrite the whole article;
+- reorganize paragraphs;
+- perform language polishing or AI-trace cleanup;
+- expand side branches;
+- treat consequence aggregation as a sufficient thesis;
+- invent an unsupported mechanism for the sake of depth;
+- treat concept naming as explanation.
 
 ## Exit
 
-G1 PASS 必须同时满足：
+G1 PASS requires all of:
 
 ~~~text
 unique main question
@@ -142,15 +143,15 @@ necessary boundary
 Insight Test = PASS
 ~~~
 
-Insight Test PASS 表示：
+Insight Test PASS means:
 
-- thesis 不只是 consequence list；
-- thesis 提供真实 explanatory value；
-- insight materially helps answer main question；
-- removing the insight would materially weaken the article and expose a common-observation collection；
-- claim strength remains supported。
+- the thesis is not merely a consequence list;
+- the thesis provides real explanatory value;
+- the insight materially helps answer the main question;
+- removing the insight would materially weaken the article and expose a collection of common observations;
+- claim strength remains supported.
 
-如果 Insight Test FAIL：
+If the Insight Test FAILS:
 
 ~~~text
 no G1 PASS
@@ -158,4 +159,4 @@ state unchanged
 no advance
 ~~~
 
-输出主问题、核心判断、必要边界和 Insight Test 结果；满足全部条件后标记 G1 PASS 并停止。
+Output the main question, core thesis, necessary boundary, and Insight Test result. Mark G1 PASS only when all conditions are satisfied, then stop.
