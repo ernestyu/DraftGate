@@ -5,17 +5,9 @@
   "article_path": "articles/20261006-explicit-writing-state/index.md",
   "cycle": 2,
   "entry_gate": "G3",
-  "skipped_by_user": [
-    "G1",
-    "G2"
-  ],
-  "current_gate": "G7",
-  "completed": [
-    "G3",
-    "G4",
-    "G5",
-    "G6"
-  ],
-  "status": "in_progress",
-  "article_revision": "4ba5c6e5aa27208bc6a25d345c58619b03247e74"
+  "skipped_by_user": ["G1", "G2"],
+  "current_gate": null,
+  "completed": ["G3", "G4", "G5", "G6", "G7"],
+  "status": "complete",
+  "article_revision": "2d5ee4ac12de13b9845772ed16c4d7aaddba2352"
 }
