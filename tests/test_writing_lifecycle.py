@@ -194,6 +194,27 @@ class WritingLifecycleTests(unittest.TestCase):
             WL.closeout(self.article_id, terminal, self.root)
 
 
+    def test_closeout_candidate_validation_failure_prevents_publish(self):
+        result = self.begin_g7()
+        branch = result["branch"]
+        terminal = self.complete_g7()
+        main_before = self.git("rev-parse", "main")
+
+        original = WL.validate_closeout_candidate
+        def fail_validation(root, commit):
+            raise WL.LifecycleError("forced closeout candidate validation failure")
+        WL.validate_closeout_candidate = fail_validation
+        try:
+            with self.assertRaisesRegex(WL.LifecycleError, "forced closeout candidate validation failure"):
+                WL.closeout(self.article_id, terminal, self.root)
+        finally:
+            WL.validate_closeout_candidate = original
+
+        self.assertEqual(self.git("rev-parse", "main"), main_before)
+        self.assertEqual(self.git("branch", "--show-current"), branch)
+        self.assertTrue(WL.ref_exists(self.root, f"refs/heads/{branch}"))
+        self.assertTrue(WL.ref_exists(self.root, f"refs/tags/{WL.evidence_name(self.article_id, 1)}"))
+
     def test_closeout_commit_and_evidence_history_validate(self):
         result = self.begin_g7()
         init_commit = self.git("rev-parse", "HEAD")
