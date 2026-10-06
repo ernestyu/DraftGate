@@ -72,7 +72,7 @@ DraftGate 不依赖 Hugo、CMS、front matter、封面图或任何发布系统�
 3. 先在 Pre-G1 和 Agent 自由讨论主题；
 4. 告诉 Agent 开始这篇文章的 DraftGate 流程；
 5. 每次通过对话只执行一个 Gate；
-6. G7 完成且 CI PASS 后，由 Agent 完成 closeout：保存完整 Gate 证据、把最终结果以一个高层 commit 写入 `main`、归档 state，并删除临时 writing branch。
+6. G7 完成且 CI PASS 后，由 GitHub Actions 自动完成 closeout：保存完整 Gate 证据、把最终结果以一个高层 commit 写入 `main`、归档 state，并删除临时 writing branch。用户不需要执行任何收尾命令。
 
 普通用户不需要理解 branch、commit trailer、evidence tag、archive path 或 squash 的具体 Git 操作。
 
@@ -174,7 +174,9 @@ Writing-Gate: G1
 - state 是否与当前文章版本一致；
 - workflow-controlled commit 和 trailers 是否合法。
 
-GitHub Actions 不是运行 DraftGate 的必要条件。本地也可以执行同样的验证：
+在 GitHub-backed 的正常使用中，terminal G7 CI PASS 会自动触发 `Writing Auto Closeout`。它会重新核对 exact writing-branch SHA、G7 trailer、complete state 和 branch/cycle identity，然后自动完成 evidence、main closeout、archive 和 branch cleanup。用户不需要执行 closeout 命令。
+
+GitHub Actions 对纯本地使用不是必要条件；本地可以执行同样的验证：
 
 ```bash
 ./writing test
