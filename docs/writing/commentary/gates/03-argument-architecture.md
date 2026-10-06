@@ -2,17 +2,17 @@
 
 ## Goal
 
-按读者理解问题的顺序组织章节和论证，而不是按作者研究过程排列。
+Organize sections and reasoning in the order a reader needs to understand the problem, not in the order the author happened to research it.
 
-G3 先完成 human-in-the-loop Narrative Mode Decision，再基于用户选择完成正式 argument architecture。Architecture 稳定后，G3 还必须判断当前文章是否已经构成 substantive first draft；如果仍然只是 seed、outline、section skeleton 或 materially incomplete draft，则继续完成 Draft Construction 后才能 PASS。
+G3 first completes a human-in-the-loop Narrative Mode Decision. After the user selects a mode, G3 builds the formal argument architecture. Once the architecture is stable, G3 must also determine whether the article is already a substantive first draft. If it is still only a seed, outline, section skeleton, placeholder-heavy draft, or materially incomplete draft, G3 must complete Draft Construction before PASS.
 
-Narrative mode 负责决定文章如何推进；central explanatory frame / narrative anchor 只是其中一种可选结构工具，不是所有文章的默认写法。
+Narrative mode determines how the article progresses. A central explanatory frame or narrative anchor is only one optional structural device and is not the default for every article.
 
 ## Reader outcome
 
-普通读者能清楚知道文章由什么驱动、为什么按当前顺序推进，以及每类材料承担什么职责。
+A general reader can tell what drives the article, why the sections appear in the current order, and what responsibility each class of material carries.
 
-中层读者不仅能复述因果链，还能区分：
+An intermediate reader can distinguish:
 
 ~~~text
 Primary narrative driver
@@ -24,9 +24,9 @@ Removable / demoted material
 
 ## Narrative Mode Decision
 
-G3 在正式 architecture 前，必须根据已经冻结的 G1 main question 和 G2 scope，向用户提出 1–3 个适合当前文章的 narrative-mode candidates。
+Before formal architecture work, G3 must propose 1–3 narrative-mode candidates appropriate to the frozen G1 main question and G2 scope.
 
-候选可以包括：
+Candidates may include:
 
 ~~~text
 question-driven
@@ -36,46 +36,46 @@ hybrid
 other / no special narrative mode
 ~~~
 
-这些不是固定模板，也不是必须全部展示的枚举。
+These are not mandatory templates and are not an enumeration that must always be shown in full.
 
-Agent 可以组合、细化或提出更适合当前文章的模式，但不得机械给出所有选项。
+The Agent may combine, refine, or propose another mode that better fits the article, but must not mechanically present every option.
 
-每个候选必须简要说明：
+For each candidate, explain briefly:
 
-1. 为什么适合当前文章；
-2. 文章如何推进；
-3. 什么材料成为主线；
-4. 什么材料降为 supporting evidence；
-5. 主要风险是什么。
+1. why it fits the article;
+2. how the article would progress;
+3. which material becomes the main line;
+4. which material becomes supporting evidence;
+5. the primary risk.
 
 ### Explicit user selection
 
-Narrative Mode Decision 是 G3 的 human-in-the-loop writing decision。
+Narrative Mode Decision is a human-in-the-loop writing decision.
 
-Agent 不得自动替用户选择。
+The Agent must not choose the mode on the user's behalf.
 
-如果用户尚未明确选择某个候选，或明确提出并选择另一个可行模式：
+If the user has not explicitly selected a candidate, or explicitly proposes and selects another workable mode:
 
 ~~~text
-G3 state 保持不变
-不得 advance
-不得标记 G3 PASS
-不得产生 gate completion transaction
+G3 state unchanged
+do not advance
+do not mark G3 PASS
+do not create a Gate completion transaction
 ~~~
 
-等待用户选择不是 Gate completion。
+Waiting for user selection is not Gate completion.
 
-Narrative mode 不进入 persistent state，不新增 state field，也不新增 runtime status。
+Narrative mode is not persisted in workflow state, does not add a state field, and does not add a runtime status.
 
 ## Mode contracts
 
-这些 contract 定义基本推进原则，不是固定目录模板。
+These contracts define basic progression principles. They are not fixed table-of-contents templates.
 
 ### question-driven
 
-Primary driver 是 main question。
+The primary driver is the main question.
 
-典型推进：
+Typical progression:
 
 ~~~text
 main question
@@ -84,95 +84,95 @@ main question
 → implication / boundary / judgment
 ~~~
 
-要求：
+Requirements:
 
-- 通过问题逐层深入；
-- 不强制 central frame；
-- Central frame decision 可以是 NOT NEEDED；
-- 各 section 必须继续推进同一个问题，而不是变成互不相干的小文章；
-- example / evidence 服务于某一解释步骤，不得形成竞争主线。
+- deepen the same question step by step;
+- do not require a central frame;
+- Central frame decision may be NOT NEEDED;
+- each major section must continue the same question rather than becoming a separate mini-article;
+- examples and evidence must serve an explanatory step rather than create a competing main line.
 
 ### frame-driven
 
-Primary driver 是 central explanatory frame。
+The primary driver is the central explanatory frame.
 
-典型推进：
+Typical progression:
 
 ~~~text
 central frame
-→ frame 内部机制
-→ 映射到现实问题
-→ 主机制展开
+→ mechanism inside the frame
+→ mapping to the real problem
+→ primary mechanism
 → competing explanation / boundary
-→ 回到 frame
+→ return to the frame
 ~~~
 
-要求：
+Requirements:
 
-- Central frame decision 必须是 USED；
-- frame 必须贯穿多个主要部分；
-- frame 必须承担真实分析功能，而不只是 opening hook；
-- frame 必须帮助解释 mechanism；
-- 不服务于 frame 或 primary mechanism 的材料应降级或删除；
-- G1 / G2 仍然具有更高 authority。
+- Central frame decision must be USED;
+- the frame must remain useful across multiple major parts;
+- the frame must perform real analytical work, not only opening-hook work;
+- the frame must help explain the mechanism;
+- material that serves neither the frame nor the primary mechanism must be demoted or removed;
+- G1 and G2 retain higher authority.
 
 ### case-driven
 
-Primary driver 是 case / observable situation 本身。
+The primary driver is a case or observable situation.
 
-典型推进：
+Typical progression:
 
 ~~~text
 case / phenomenon
-→ case 内部发生了什么
+→ what happens inside the case
 → mechanism
 → controlled generalization
 → boundary / implication
 ~~~
 
-要求：
+Requirements:
 
-- case 本身是研究对象；
-- generalization 逐步展开；
-- 不得把案例偷偷改成 unrelated metaphor；
-- 不得从单一 case 直接跳到普遍规律；
-- local analogy 与 case 必须保持职责区分。
+- the case itself is the object of analysis;
+- generalization develops gradually;
+- do not silently convert the case into an unrelated metaphor;
+- do not jump from one case directly to a universal law;
+- keep local analogy separate from the case's role.
 
 ### hybrid
 
-Hybrid 可以组合两个或以上 narrative devices，但必须明确一个 primary driver。
+Hybrid may combine two or more narrative devices, but exactly one must be the primary driver.
 
-例如：
+Examples:
 
 ~~~text
 primary driver = question-driven
 secondary device = frame
 ~~~
 
-或：
+or:
 
 ~~~text
 primary driver = case-driven
 secondary device = question progression
 ~~~
 
-不得出现两个竞争主线。
+Do not create two competing main lines.
 
-如果读者可以合理地把两组不同材料都理解成全文主轴，architecture 尚未稳定，G3 不能 PASS。
+If readers could reasonably interpret two different material groups as co-equal article spines, architecture is not stable and G3 cannot PASS.
 
 ### other / no special narrative mode
 
-如果上述模式都不合适，可以使用其它明确描述的 architecture，或者 no special narrative mode。
+If none of the named modes fits, use another clearly described architecture or no special narrative mode.
 
-要求：
+Requirements:
 
-- 明确 primary driver；
-- 明确文章的 progression rule；
-- 不得因为缺少特殊叙事装置而强行制造 frame / case。
+- identify the primary driver;
+- identify the progression rule;
+- do not invent a frame or case merely because no special narrative device exists.
 
 ## Conditional phenomenon-first architecture
 
-对于 frame-driven / case-driven，如果存在具体、可观察且真正有解释价值的现象，可以优先：
+For frame-driven or case-driven articles, a concrete and genuinely explanatory phenomenon may sometimes come first:
 
 ~~~text
 phenomenon
@@ -180,88 +180,89 @@ phenomenon
 → main question / larger implication
 ~~~
 
-phenomenon-first 只是条件性选择，不是全局 opening 要求。
+Phenomenon-first is conditional, not a universal opening requirement.
 
-以下情况不得强制 phenomenon-first：
+Do not force it when:
 
-- phenomenon 只是 decorative hook；
-- main question 必须先建立才能理解后续内容；
-- 文章主要是 question-driven；
-- phenomenon 会延迟真正的 analytical problem；
-- opening 会因此变成 anecdotal storytelling。
+- the phenomenon is only a decorative hook;
+- the main question must be established first;
+- the article is primarily question-driven;
+- the phenomenon delays the real analytical problem;
+- the opening would become anecdotal storytelling without analytical value.
 
 ## Explanatory Spine Check
 
-Narrative Mode Decision 完成后、正式 architecture PASS 之前，G3 必须建立 Explanatory Spine。
+After Narrative Mode Decision and before architecture PASS, G3 must establish an Explanatory Spine.
 
-定义：
+Definition:
 
 ~~~text
 Explanatory Spine
 =
-全文持续推进的一条 mechanism / relationship / contradiction / constraint chain
+one continuing mechanism / relationship / contradiction / constraint chain
+that advances across the whole article
 ~~~
 
-它回答：
+It answers:
 
 ~~~text
-文章为什么能从第一步推到最后一步？
+Why can the article move logically from its first step to its last step?
 ~~~
 
-Explanatory Spine 必须体现 causal、logical 或 structural progression，不能只是 section topic list。
+The Explanatory Spine must contain causal, logical, or structural progression. A list of section topics is not enough.
 
 ### Narrative Mode != Explanatory Spine
 
-Narrative Mode 回答：
+Narrative Mode answers:
 
 ~~~text
-文章怎么讲？
+How is the article told?
 ~~~
 
-Explanatory Spine 回答：
+Explanatory Spine answers:
 
 ~~~text
-文章为什么能从第一步推到最后一步？
+Why does the reasoning progress from the first step to the last?
 ~~~
 
-因此：
+Therefore:
 
 ~~~text
 Narrative Mode != Explanatory Spine
 ~~~
 
-question-driven、frame-driven、case-driven、hybrid、other / no special narrative mode 都必须有 Explanatory Spine。
+Every mode—question-driven, frame-driven, case-driven, hybrid, or other—requires an Explanatory Spine.
 
 ### Central Frame != Explanatory Spine
 
-Central Frame 是可选 narrative device。
+A Central Frame is an optional narrative device.
 
-Explanatory Spine 是所有文章都必须存在的解释链。
+An Explanatory Spine is the required reasoning chain.
 
-因此：
+Therefore:
 
 ~~~text
 Central Frame != Explanatory Spine
 ~~~
 
-frame 可以帮助展示 spine，但不能替代 spine。
+A frame may help display the spine but cannot replace it.
 
-frame-driven 文章如果读者只能记住 frame，却说不清 mechanism chain，G3 不能 PASS。
+If a frame-driven article leaves the reader remembering only the frame but unable to explain the mechanism chain, G3 cannot PASS.
 
-case-driven 文章如果只描述 case 发生了什么，却没有推出 mechanism、relationship、constraint 或 implication chain，G3 不能 PASS。
+If a case-driven article only describes what happened in the case but does not derive a mechanism, relationship, constraint, or implication chain, G3 cannot PASS.
 
 ### Required spine output
 
-G3 必须明确输出：
+G3 must explicitly output:
 
 ~~~text
 Explanatory spine:
-<用 1–3 句话表达>
+<expressed in 1–3 sentences>
 ~~~
 
-1–3 句话是 reasoning compression artifact，不进入 persistent state，也不写入 workflow JSON。
+The 1–3 sentence form is a reasoning-compression artifact. It is not persisted in workflow state.
 
-一个合格 spine 通常应能看出：
+A qualifying spine normally makes visible:
 
 ~~~text
 starting condition
@@ -270,49 +271,47 @@ starting condition
 → final structural judgment
 ~~~
 
-这不是固定公式，要求的是 continuity。
+This is not a fixed rhetorical formula. The requirement is continuity.
 
 ### Section binding
 
-每个 major section 都必须能够回答：
+Every major section must answer:
 
 ~~~text
-本节如何推进 Explanatory Spine？
+How does this section advance or support the Explanatory Spine?
 ~~~
 
-只回答：
+It is not enough to say:
 
 ~~~text
-本节和主问题有关
+This section is related to the main question.
 ~~~
 
-不够。
+Each major section should have a clear spine function, such as:
 
-major section 至少应承担一个清楚的 spine function，例如：
+- establish a starting condition;
+- explain the primary mechanism;
+- introduce a required intermediate link;
+- test or qualify the mechanism;
+- derive an implication;
+- expose a structural contradiction;
+- move from mechanism to final judgment.
 
-- establish starting condition；
-- explain primary mechanism；
-- introduce required intermediate link；
-- test / qualify the mechanism；
-- derive implication；
-- expose structural contradiction；
-- move from mechanism to final judgment。
-
-如果某节有趣，但没有推进或支持 spine，则必须：
+If a section is interesting but does not advance or support the spine, it must be:
 
 ~~~text
-demote
-remove
-or rewrite its role
+demoted
+removed
+or assigned a different role
 ~~~
 
-这属于现有 Material Hierarchy，不新增 parallel structure。
+This remains part of the existing Material Hierarchy and does not create a parallel structure.
 
 ## Material Hierarchy
 
-完成 Narrative Mode Decision 后，G3 必须对主要材料做职责分层。
+After Narrative Mode Decision, G3 must classify the responsibilities of major material.
 
-至少包括：
+At minimum:
 
 ~~~text
 Primary narrative driver
@@ -322,74 +321,66 @@ Local analogy
 Removable / demoted material
 ~~~
 
-如果是 frame-driven，还必须明确：
+For a frame-driven article, also identify:
 
 ~~~text
 Central frame role
 ~~~
 
-Material Hierarchy 属于 G3 reasoning / architecture artifact，不进入 persistent state。
+Material Hierarchy is a G3 reasoning artifact, not persistent state.
 
 ### Primary narrative driver
 
-决定读者如何从文章开头走到结尾的唯一主驱动。
+The single device that determines how the reader moves from the opening to the ending.
 
-全文只能有一个 primary narrative driver。
+The article has exactly one primary narrative driver.
 
 ### Primary mechanism
 
-回答 G1 主问题的核心解释机制。
+The core explanatory mechanism that answers the G1 main question.
 
-叙事装置可以帮助展示 mechanism，但不得替代 mechanism。
+Narrative devices may help display it but cannot replace it.
 
 ### Supporting evidence
 
-事实、案例、数据、观察或例子，只承担清楚的辅助职责。
+Facts, cases, data, observations, and examples must carry a clear supporting responsibility.
 
-每一组 supporting evidence 都必须能够回答：
+Each group of supporting evidence must answer:
 
 ~~~text
-它具体支持哪个 claim / mechanism step？
+Which claim or mechanism step does this support?
 ~~~
 
-Supporting evidence 不得形成竞争 narrative spine。
+Supporting evidence must not form a competing narrative spine.
 
 ### Local analogy
 
-只服务于局部理解的 analogy / concrete scenario。
+A local analogy or concrete scenario exists only to support local understanding.
 
-Local analogy 不得在没有重新完成 G3 architecture decision 的情况下升级为全文 central frame。
+A local analogy must not become the whole-article central frame unless the user re-enters G3 architecture decision and explicitly approves that change.
 
 ### Removable / demoted material
 
-材料本身可能正确、精彩或有趣，但如果不服务于 primary narrative driver、primary mechanism 或明确 supporting role，就应：
+Material may be correct, vivid, or interesting but still inappropriate for the current article.
 
-~~~text
-remove
-/
-shorten
-/
-demote
-~~~
+If it serves neither the primary narrative driver, primary mechanism, nor a clear supporting role, it should be removed, shortened, or demoted.
 
-核心规则：
+Core rule:
 
 ~~~text
 good example != suitable example
 ~~~
 
-一个例子“很好”不等于它适合当前文章。
-
 ## Compression Test
 
-G3 Exit 前必须执行 Compression Test：
+Before G3 Exit, run the Compression Test:
 
 ~~~text
-去掉标题、案例、数据、小节和修辞后，
-能否用 3–4 句话完整表达文章独特的推理链？
+After removing headings, examples, data, subsection labels, and rhetoric,
+can the article's distinctive reasoning chain be expressed in 3–4 sentences?
 ~~~
 
-3–4 句话必须保留：
+Those 3–4 sentences must retain:
 
 ~~~text
 starting point
@@ -398,38 +389,38 @@ key intermediate inference
 final judgment
 ~~~
 
-句数是 reasoning test，不是正文格式限制。
+Sentence count here is a reasoning test, not a body-format rule.
 
 ### PASS
 
-PASS 时，压缩后仍能看出：
+The compressed version still shows:
 
-- reasoning 从哪里开始；
-- 哪个 mechanism / relationship 承担主要解释工作；
-- 哪个 key intermediate inference 把 mechanism 推向下一步；
-- final judgment 为什么由前面推出。
+- where the reasoning starts;
+- which mechanism or relationship performs the main explanatory work;
+- which intermediate inference moves the mechanism forward;
+- why the final judgment follows.
 
 ### FAIL
 
-以下至少属于 FAIL：
+At minimum, FAIL includes:
 
-- 只能列出几个观点；
-- 只能列出几个 section topic；
-- 只能复述 main question；
-- 压缩后只剩主题词，看不出 mechanism；
-- key intermediate inference 消失；
-- final judgment 突然出现，看不出 reasoning path；
-- 只有恢复 examples / rhetoric 后文章才显得连贯。
+- only a list of opinions remains;
+- only a list of section topics remains;
+- the compressed form merely repeats the main question;
+- only theme words remain and the mechanism disappears;
+- the key intermediate inference disappears;
+- the final judgment appears without a visible reasoning path;
+- coherence depends on restoring examples or rhetoric.
 
-Compression Test 不要求正文只有 3–4 个观点。
+The Compression Test does not require the article body to contain only 3–4 ideas.
 
-它只检查全文是否存在一条可压缩的 unified reasoning skeleton。
+It checks whether the article has one compressible reasoning skeleton.
 
 ## Draft Construction
 
-Architecture 完成后，G3 进入 Draft Construction Check。
+After architecture is complete, G3 performs the Draft Construction Check.
 
-核心目标：
+Core target:
 
 ~~~text
 major section responsibility
@@ -438,48 +429,50 @@ major section responsibility
 
 ### When expansion is required
 
-如果当前文章仍然属于以下任一种状态：
+If the current article remains any of the following:
 
-- seed draft；
-- outline；
-- section skeleton；
-- placeholder-heavy draft；
-- major section 只有一两句职责说明；
-- materially incomplete draft；
+- seed draft;
+- outline;
+- section skeleton;
+- placeholder-heavy draft;
+- major sections containing only one or two responsibility notes;
+- materially incomplete draft;
 
-G3 必须把 major sections 展开成可连续阅读的 complete first draft，不能以 outline-only 状态 PASS。
+G3 must expand the major sections into a continuously readable complete first draft before PASS.
 
-以下内容不能被视为完成 section responsibility：
+The following do not satisfy a section responsibility:
 
-- one-line placeholder；
-- section-purpose note；
-- outline bullets；
-- “本节将解释……”一类只描述未来内容的句子；
-- heading 下没有 substantive development。
+- one-line placeholder;
+- section-purpose note;
+- outline bullets;
+- a sentence that only says what the section will explain later;
+- a heading with no substantive development below it.
 
-不得使用固定 word count、paragraph count、sentence count 或 character threshold 判断 draft completeness。
+Do not use fixed word count, paragraph count, sentence count, or character threshold to determine draft completeness.
 
 ### Existing substantive prose
 
-如果已有正文已经完成其 section responsibility，应尽量保留。
+If existing prose already performs its section responsibility, preserve it as much as possible.
 
-G3 只做满足当前 architecture 和 Draft Construction Check 所必需的修改，不得因为进入 G3 就重新生成整篇文章。
+G3 makes only the changes necessary to satisfy the current architecture and Draft Construction Check.
+
+Entering G3 does not authorize regenerating the whole article.
 
 ### Allowed Draft Construction work
 
-G3 可以为了构造完整正文：
+G3 may:
 
-- 展开已经由 G1 / G2 / G3 授权的解释；
-- 展开 scope 内已经存在的 mechanism；
-- 把 section responsibility 写成 substantive prose；
-- 使用用户已经提供或文章已经包含的事实、例子和材料；
-- 写必要的段落、正常句子和过渡；
-- 让 major sections 与 Explanatory Spine 连续衔接；
-- 应用 G3 Custom Rules。
+- expand explanations already authorized by G1, G2, and G3;
+- develop mechanisms already inside scope;
+- turn section responsibility into substantive prose;
+- use facts, examples, and material already supplied by the user or already present in the article;
+- write necessary paragraphs, ordinary sentences, and transitions;
+- connect major sections continuously to the Explanatory Spine;
+- apply G3 Custom Rules.
 
 ### Downstream authority boundary
 
-核心边界：
+Core boundary:
 
 ~~~text
 draft construction necessity
@@ -487,28 +480,28 @@ draft construction necessity
 downstream Gate responsibility
 ~~~
 
-G3 可以为了构造 complete first draft 写解释、段落、过渡和正常句子。
+G3 may write explanation, paragraphs, transitions, and ordinary sentences when necessary to create a complete first draft.
 
-但 G3 不得以独立目标执行：
+But G3 must not make the following independent objectives:
 
-- G4 accessibility audit；
-- G5 adversarial / evidence pressure test；
-- G6 paragraph audit / restructuring；
-- G7 language / pattern / AI-trace cleanup。
+- G4 accessibility audit;
+- G5 adversarial / evidence pressure test;
+- G6 paragraph audit / restructuring;
+- G7 language / pattern / AI-trace cleanup.
 
-如果 G3 看见这些 downstream 问题，除非修正是产生 coherent substantive draft 所严格必需，否则留给对应 Gate。
+If G3 notices downstream problems, leave them to the corresponding Gate unless a minimal correction is strictly necessary to produce coherent substantive draft prose.
 
-G3 还不得：
+G3 also must not:
 
-- 发明事实、数据、quotation、source 或 evidence；
-- 把 unsupported factual claim 当作已验证事实；
-- 为增加长度而扩写；
-- 越过 G2 scope；
-- silently rewrite G1 thesis。
+- invent facts, data, quotations, sources, or evidence;
+- treat unsupported factual claims as verified;
+- expand merely to increase length;
+- cross G2 scope;
+- silently rewrite the G1 thesis.
 
 ## Central frame decision
 
-Narrative Mode Decision 完成后，G3 继续保留：
+After Narrative Mode Decision, G3 records a reasoning artifact:
 
 ~~~text
 Central frame decision:
@@ -517,159 +510,155 @@ or
 NOT NEEDED
 ~~~
 
-这个决定不进入 persistent state。
+This decision is not persistent state.
 
-不同 narrative mode 下：
+By mode:
 
 ~~~text
 question-driven
-→ central frame 可为 NOT NEEDED
+→ central frame may be NOT NEEDED
 
 frame-driven
-→ central frame 必须为 USED
+→ central frame must be USED
 
 case-driven
-→ case 是 driver；通常不需要再制造另一个 metaphorical central frame
+→ the case is the driver; do not automatically add another metaphorical frame
 
 hybrid
-→ 由已声明的 primary driver 决定 central frame 是否 USED
+→ central frame usage follows the declared primary driver
 ~~~
 
 ### USED
 
-只有当某个 frame 同时满足以下条件时才使用：
+Use a frame only if it:
 
-- 与 G1 主问题直接相关
-- 服务于 G2 已冻结主线
-- 能承担机制解释，而不只是制造故事感
-- 能在文章后部继续产生分析价值
-- 可以在至少两个以上文章阶段 / 章节中持续发挥作用
-- 不会把读者带向另一篇文章
+- directly serves the G1 main question;
+- serves the G2 frozen main line;
+- performs mechanism explanation rather than only story-making;
+- continues to add analytical value later in the article;
+- remains useful across at least two major article stages or sections;
+- does not pull the reader toward a different article.
 
-frame 必须服从文章主问题，不能为了适应 frame 反过来修改 G1 thesis 或 G2 scope。
+The frame must serve the article. The article must not be rewritten merely to fit the frame.
 
 ### NOT NEEDED
 
-如果不存在天然合适的 central frame，就使用 NOT NEEDED。
+If no naturally useful central frame exists, choose NOT NEEDED.
 
-不得为了满足 G3、传播性或“更好看”而强行制造故事。不得为了通过 G3 强行增加 frame。
+Do not invent a story for virality, attractiveness, or Gate completion.
 
 ## Frame quality check
 
-G3 采用 central frame 前必须问：
+Before adopting a frame, ask:
 
-1. 这个 frame 是否真正帮助解释主问题？
-2. 它是否只是一个漂亮 hook，还是能持续承担分析功能？
-3. 开头引入后，中段还能否继续推进机制？
-4. 结尾能否自然回到它？
-5. 它是否会抢夺主线或诱导文章迁就类比？
-6. 如果没有它，文章是否反而更清楚？
+1. Does it materially help explain the main question?
+2. Does it perform analysis beyond acting as a hook?
+3. Can it still advance the mechanism in the middle of the article?
+4. Can the ending return to it naturally?
+5. Does it compete with the main line or distort the article to fit the analogy?
+6. Would the article be clearer without it?
 
-不合格 frame 包括：
+Weak frames include:
 
-- 只负责吸引眼球的历史故事
-- 与主问题弱相关的名人 / 战争 / 电影 / 文学隐喻
-- 开头出现、后文完全不用的 disconnected hook
-- 为了“宏大感”添加的场景
-- 无法继续承载机制解释的记忆点
+- a historical story used only to attract attention;
+- a celebrity, war, film, or literary metaphor weakly related to the main question;
+- a disconnected hook that disappears after the opening;
+- a grand scene added only to create scale;
+- a memorable image that cannot continue to explain the mechanism.
 
 ## G3 / G4 boundary
 
-G3 负责：
+G3 owns:
 
 ~~~text
 whole-article frame / narrative architecture
-/
 primary narrative driver
-/
 central frame decision
 ~~~
 
-G4 负责：
+G4 owns:
 
 ~~~text
 local explanatory analogy
-/
 concrete scenario
-/
-局部直觉解释
+local intuitive explanation
 ~~~
 
-如果 G3 已经采用 central frame，G4 可以补足局部映射、具体解释和必要边界说明，但不得重新发明一个新的全文主框架，也不得把局部类比升级成新的 central frame。
+If G3 already uses a central frame, G4 may improve local mapping, explanation, and boundary statements, but may not invent a new whole-article frame or promote a local analogy into one.
 
 ## G5 challenge boundary
 
-Central frame 和 narrative mode 都不是不可触碰的修辞核心。
+Central frame and narrative mode remain open to G5 pressure testing.
 
-后续 G5 仍必须能够挑战：
+G5 may challenge:
 
-- frame 是否过度类比
-- 映射是否成立
-- competing mechanism 是否存在
-- 哪些地方不再相似
-- case 是否支持当前 generalization
+- whether the frame overextends the analogy;
+- whether the mapping is valid;
+- whether a competing mechanism exists;
+- where the similarity stops;
+- whether a case supports the current generalization.
 
-如果 G5 发现 frame / case 导致 claim 失真，按现有 G5 / reopen / correction semantics 处理。
+If G5 finds that the frame or case distorts claim validity, use existing G5 / reopen / correction semantics.
 
-不得因为 frame “写得漂亮”而保留错误映射。
+Do not preserve a false mapping merely because the frame is rhetorically effective.
 
 ## Allowed
 
-- 提出 1–3 个当前文章适用的 narrative-mode candidates
-- 在用户明确选择后完成 architecture
-- 建立并输出 Explanatory Spine
-- 对 major sections 执行 spine binding
-- 执行 Compression Test
-- 重排章节
-- 合并或拆分章节
-- 明确每节唯一任务
-- 调整必要过渡，使递进关系成立
-- 建立 Material Hierarchy
-- 判断 central frame 是否 USED / NOT NEEDED
-- 删除或降级会制造竞争主线的 supporting material
-- 在需要时把 seed / outline / incomplete draft 展开成 complete first draft
-- 为 Draft Construction 写必要的解释、段落、过渡和正常句子
+- propose 1–3 suitable narrative-mode candidates;
+- complete architecture after explicit user selection;
+- establish and output the Explanatory Spine;
+- bind major sections to the spine;
+- run the Compression Test;
+- reorder sections;
+- merge or split sections;
+- define one responsibility for each major section;
+- adjust necessary transitions so progression works;
+- establish the Material Hierarchy;
+- decide whether the central frame is USED or NOT NEEDED;
+- remove or demote supporting material that creates a competing main line;
+- expand a seed, outline, or incomplete draft into a complete first draft when required;
+- write necessary explanation, paragraphs, transitions, and ordinary sentences for Draft Construction.
 
 ## Forbidden
 
-- Agent 自动替用户决定 narrative mode
-- 用户尚未选择时 advance G3
-- 用 Narrative Mode 或 Central Frame 冒充 Explanatory Spine
-- 让 major section 只“和主问题有关”却不推进 spine
-- 在 G3 silently rewrite G1 thesis
-- 改变 G1 已冻结的主问题
-- 把 G2 已降级的支线重新抬成主线
-- 为了传播性强行制造故事
-- 使用与主问题弱相关的历史类比
-- 让 supporting evidence 形成竞争 narrative
-- 为了保住 frame 修改 G1 thesis 或 G2 scope
-- 引入只在开头出现、后文不再承担功能的 decorative hook
-- 把 phenomenon-first 当成全局要求
-- 把 G4 accessibility audit 当作 G3 独立目标
-- 把 G5 adversarial / evidence pressure test 当作 G3 独立目标
-- 把 G6 paragraph audit / restructuring 当作 G3 独立目标
-- 把 G7 language / pattern / AI-trace cleanup 当作 G3 独立目标
-- 做逐句语言润色作为独立 cleanup 任务
-- 做 AI trace cleanup
+- choosing narrative mode for the user;
+- advancing G3 before user selection;
+- treating Narrative Mode or Central Frame as the Explanatory Spine;
+- allowing a major section to be merely related to the main question without advancing the spine;
+- silently rewriting the G1 thesis;
+- changing the frozen G1 main question;
+- promoting a G2-demoted branch into the main line;
+- inventing a story only for attractiveness;
+- forcing a historical analogy weakly related to the main question;
+- allowing supporting evidence to create a competing narrative;
+- changing G1 thesis or G2 scope to preserve a frame;
+- using a decorative hook that has no later function;
+- treating phenomenon-first as a universal requirement;
+- performing G4 accessibility audit as an independent G3 objective;
+- performing G5 adversarial / evidence pressure testing as an independent G3 objective;
+- performing G6 paragraph audit / restructuring as an independent G3 objective;
+- performing G7 language / pattern / AI-trace cleanup as an independent G3 objective;
+- sentence-level polishing as an independent cleanup task;
+- AI-trace cleanup.
 
 ## G1 / G3 authority boundary
 
-G1 负责：
+G1 owns:
 
 ~~~text
-发现并冻结值得写的 core insight / thesis
+discover and freeze a core insight / thesis worth writing
 ~~~
 
-G3 负责：
+G3 owns:
 
 ~~~text
-把 frozen insight 展开成 coherent Explanatory Spine
-→ 再组织成 narrative architecture
+expand the frozen insight into a coherent Explanatory Spine
+→ organize that spine into narrative architecture
 ~~~
 
-G3 可以澄清 thesis 的 implication，但不得 silently replace or rewrite G1 thesis。
+G3 may clarify implications but must not silently replace or rewrite the G1 thesis.
 
-如果无法形成 coherent spine，而根因来自 frozen G1 thesis：
+If a coherent spine cannot be built because the frozen G1 thesis is the problem:
 
 ~~~text
 STOP
@@ -678,48 +667,48 @@ STOP
 → do not silently rewrite thesis
 ~~~
 
-用户继续使用现有 reopen / correction / start-cycle semantics。
+The user continues with existing reopen / correction / start-cycle semantics.
 
-不得新增 rollback mechanism。
+Do not introduce a rollback mechanism.
 
-如果 architecture 检查暴露出 claim 本身存在证据或强度问题：
+If architecture review exposes a claim-strength or evidence problem:
 
 ~~~text
 STOP
 → report conflict
 ~~~
 
-不得在 G3 顺手修改 G5 claim boundary。
+Do not silently perform G5 work inside G3.
 
 ## Conditional resource
 
-读取 `../structure-rules.md`。
+Read `../structure-rules.md`.
 
 ## Exit
 
-G3 PASS 前必须全部满足：
+Before G3 PASS, all of the following must hold:
 
-1. 用户已明确选择或批准 narrative mode；
-2. Primary narrative driver 唯一且清楚；
-3. Primary mechanism 清楚；
-4. Explanatory Spine 已明确用 1–3 句话表达；
-5. 每个 major section 都推进或支持 Explanatory Spine；
-6. Supporting evidence 均有明确辅助职责；
-7. Supporting evidence 不形成 competing narrative；
-8. Local analogy 保持局部职责；
-9. 必要时已识别 Removable / demoted material；
-10. section progression 与选定 mode 一致；
-11. Central frame decision 与 narrative mode 一致；
-12. Compression Test = PASS；
-13. G1 thesis unchanged；
-14. G2 scope unchanged；
-15. Draft Construction Check = PASS；
-16. 每个 major section 已有 substantive prose 完成其 section responsibility；
-17. 文章可作为 complete first draft 连续阅读，而不是 outline / placeholder skeleton；
-18. 已有足够正文已尽量保留，只做必要修改；
-19. G4–G7 downstream responsibilities 未被 G3 作为独立目标执行。
+1. the user has explicitly selected or approved the narrative mode;
+2. the Primary narrative driver is unique and clear;
+3. the Primary mechanism is clear;
+4. the Explanatory Spine is expressed in 1–3 sentences;
+5. every major section advances or supports the Explanatory Spine;
+6. supporting evidence has a clear supporting responsibility;
+7. supporting evidence does not form a competing narrative;
+8. local analogy remains local;
+9. removable or demoted material has been identified when necessary;
+10. section progression matches the selected mode;
+11. Central frame decision matches the selected mode;
+12. Compression Test = PASS;
+13. G1 thesis unchanged;
+14. G2 scope unchanged;
+15. Draft Construction Check = PASS;
+16. every major section contains substantive prose that performs its section responsibility;
+17. the article reads as a complete first draft rather than an outline or placeholder skeleton;
+18. sufficient existing prose has been preserved where possible;
+19. G4–G7 downstream responsibilities have not been executed as independent G3 objectives.
 
-如果等待用户选择：
+If waiting for user selection:
 
 ~~~text
 G3 = WAITING FOR USER
@@ -727,6 +716,6 @@ state unchanged
 no advance
 ~~~
 
-WAITING FOR USER 只是 conversational execution condition，不是新的 runtime state status。
+WAITING FOR USER is only a conversational execution condition. It is not a runtime state status.
 
-标记 G3 PASS 后停止。
+Mark G3 PASS and stop.
