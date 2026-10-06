@@ -59,7 +59,7 @@ class WritingG5AdversarialTests(unittest.TestCase):
     def test_narrative_compatible_expression_preserves_precision(self):
         self.assertIn("Narrative-compatible adversarial expression", self.g5)
         self.assertIn("strongest reasonable objection", self.g5)
-        self.assertIn("counterfactual / falsification condition", self.g5)
+        self.assertIn("Counterfactual / falsification condition", self.g5)
         self.assertIn("precision > narrative elegance", self.g5)
         self.assertIn("direct, abstract, or technical language", self.g5)
 
