@@ -1,0 +1,75 @@
+name: Release Version
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - VERSION
+      - CHANGELOG.md
+      - docs/releases/**
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid VERSION: $version"
+            exit 1
+          fi
+          notes="docs/releases/$version.md"
+          if [[ ! -f "$notes" ]]; then
+            echo "Missing release notes: $notes"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "notes=$notes" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag if missing
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            target="$(git rev-list -n 1 "$VERSION")"
+            if [[ "$target" != "$GITHUB_SHA" ]]; then
+              echo "Tag $VERSION already exists at $target, expected $GITHUB_SHA"
+              exit 1
+            fi
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" "$GITHUB_SHA" -m "DraftGate $VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Create GitHub release if missing
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          NOTES: ${{ steps.version.outputs.notes }}
+        run: |
+          set -euo pipefail
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            exit 0
+          fi
+          gh release create "$VERSION"             --title "DraftGate $VERSION"             --notes-file "$NOTES"
