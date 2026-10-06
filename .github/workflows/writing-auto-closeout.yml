@@ -86,28 +86,28 @@ jobs:
           fi
 
           cycle="$(python3 - "$state" "$article" <<'PY'
-import json
-import sys
+          import json
+          import sys
 
-path, expected_article = sys.argv[1:]
-with open(path, encoding="utf-8") as fh:
-    state = json.load(fh)
+          path, expected_article = sys.argv[1:]
+          with open(path, encoding="utf-8") as fh:
+              state = json.load(fh)
 
-if state.get("article_id") != expected_article:
-    raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL state article_id mismatch")
-if state.get("status") != "complete":
-    raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal state is not complete")
-if state.get("current_gate") is not None:
-    raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal current_gate must be null")
-completed = state.get("completed")
-if completed != ["G1", "G2", "G3", "G4", "G5", "G6", "G7"] and "G7" not in completed:
-    raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal completed set does not contain G7")
-cycle = state.get("cycle")
-if not isinstance(cycle, int) or isinstance(cycle, bool) or cycle < 1:
-    raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL invalid cycle")
-print(cycle)
-PY
-)"
+          if state.get("article_id") != expected_article:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL state article_id mismatch")
+          if state.get("status") != "complete":
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal state is not complete")
+          if state.get("current_gate") is not None:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal current_gate must be null")
+          completed = state.get("completed")
+          if completed != ["G1", "G2", "G3", "G4", "G5", "G6", "G7"] and "G7" not in completed:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL terminal completed set does not contain G7")
+          cycle = state.get("cycle")
+          if not isinstance(cycle, int) or isinstance(cycle, bool) or cycle < 1:
+              raise SystemExit("WRITING_AUTO_CLOSEOUT_FAIL invalid cycle")
+          print(cycle)
+          PY
+          )"
 
           expected_branch="writing/$article/c$cycle"
           if [[ "$WRITING_BRANCH" != "$expected_branch" ]]; then
