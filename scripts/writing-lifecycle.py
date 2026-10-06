@@ -80,6 +80,27 @@ def push_begin_branch(root: Path, name: str) -> None:
         git(root, "push", "-u", "origin", f"HEAD:refs/heads/{name}")
 
 
+def validate_closeout_candidate(root: Path, commit: str) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts" / "validate-writing-commit.py"),
+            "--root",
+            str(root),
+            "--commit",
+            commit,
+        ],
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    if proc.returncode != 0:
+        raise LifecycleError(
+            "closeout candidate failed commit validation:\n" + proc.stdout.strip()
+        )
+
+
 def publish_closeout(root: Path, tag: str, closeout_commit: str, current_main: str, branch: str) -> None:
     if not has_origin(root):
         git(root, "update-ref", "refs/heads/main", closeout_commit, current_main)
@@ -316,6 +337,7 @@ def closeout(article_id: str, ci_passed_for: str, root: Path) -> dict:
     if blob_or_none(root, closeout_commit, active_rel(article_id)) is not None:
         raise LifecycleError("closeout retained active state")
     verify_archive(root, closeout_commit, terminal, article_id, cycle)
+    validate_closeout_candidate(root, closeout_commit)
 
     publish_closeout(root, tag, closeout_commit, current_main, expected_branch)
     git(root, "switch", "main")
