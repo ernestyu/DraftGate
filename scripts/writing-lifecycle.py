@@ -84,7 +84,7 @@ def validate_closeout_candidate(root: Path, commit: str) -> None:
     proc = subprocess.run(
         [
             sys.executable,
-            str(root / "scripts" / "validate-writing-commit.py"),
+            str(ROOT / "scripts" / "validate-writing-commit.py"),
             "--root",
             str(root),
             "--commit",
